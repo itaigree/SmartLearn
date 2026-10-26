@@ -1,5 +1,5 @@
 // Keep in sync with the version shown in the header of index.html
-const CACHE_NAME = 'smartlearn-cache-v34';
+const CACHE_NAME = 'smartlearn-cache-v35';
 const urlsToCache = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {
@@ -51,16 +51,20 @@ self.addEventListener('fetch', event => {
 
   // Let API calls (e.g. Gemini) and anything else from other origins go straight to the network
   if (url.origin !== self.location.origin) return;
+  // Every page URL is the app itself - also the links with ?open=... from reminders and notifications,
+  // so offline they open the cached app instead of the browser's error page
+  const isPage = event.request.mode === 'navigate';
   event.respondWith(
     fetch(event.request)
       .then(response => {
         if (response && response.status === 200 && response.type === 'basic') {
             const responseToCache = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseToCache));
+            const isApp = isPage && (response.headers.get('Content-Type') || '').includes('text/html');
+            caches.open(CACHE_NAME).then(cache => cache.put(isApp ? './' : event.request, responseToCache));
         }
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(isPage ? './' : event.request))
   );
 });
 

@@ -89,8 +89,8 @@
         .lesson-content th, .lesson-content td { border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; text-align: right; }
         .lesson-content a { color: #0284c7; text-decoration: underline; }
 
-        /* Course titles are big: let English words in them wrap (isolateLatin keeps short runs on one line) */
-        #syllabus-title bdi { white-space: normal !important; }
+        /* Titles: let English words in them wrap (isolateLatin keeps short runs on one line) */
+        #syllabus-title bdi, #lessons-list bdi, #review-lessons bdi, .lesson-content h2 bdi, .lesson-content h3 bdi { white-space: normal !important; }
 
         /* Transitions */
         .fade-enter { opacity: 0; transform: translateY(10px); }
@@ -169,6 +169,7 @@
         html.dark ::-webkit-scrollbar-thumb { background: #475569; }
         html.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         html.dark .loader { border-color: #334155; border-top-color: #0ea5e9; }
+        html.dark #theme-btn:not(:hover) { color: #fbbf24; } /* a yellow sun, so it doesn't read as a second settings gear */
 
         /* High-contrast mode drops the colors that mark the chosen theme option */
         @media (forced-colors: active) { #theme-options [aria-pressed="true"] { outline: 2px solid Highlight; } }
@@ -182,7 +183,7 @@
                 <div class="w-8 h-8 bg-brand-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
-                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v34</span></h1>
+                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v35</span></h1>
             </div>
 
             <div id="nav-actions" class="flex items-center min-[360px]:gap-4">
@@ -252,10 +253,10 @@
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <button id="course-reminder-btn" onclick="app.openReminderModal()" class="text-brand-600 hover:bg-brand-50 p-2 rounded-lg transition-colors" title="תזכורת לקורס">
-                                <i class="fa-regular fa-bell"></i>
+                                <i class="fa-regular fa-bell" aria-hidden="true"></i>
                             </button>
                             <button onclick="app.deleteCurrentCourse()" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors text-sm" title="מחק קורס">
-                                <i class="fa-regular fa-trash-can"></i>
+                                <i class="fa-regular fa-trash-can" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -277,11 +278,11 @@
                     <h2 id="lesson-current-title" class="font-bold text-lg text-slate-800 line-clamp-1 min-w-0"></h2>
                     <div class="flex items-center shrink-0 bg-slate-100 rounded-full text-sm text-slate-600">
                         <button id="prev-lesson-btn" onclick="app.goToPrevLesson()" class="w-8 h-8 rounded-full hover:bg-slate-200 hover:text-brand-600 transition-colors disabled:opacity-30 disabled:pointer-events-none" title="השיעור הקודם">
-                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                            <i class="fa-solid fa-chevron-right text-xs" aria-hidden="true"></i>
                         </button>
                         <span id="lesson-counter" class="px-1 whitespace-nowrap"></span>
                         <button id="header-next-btn" onclick="app.goToNextLesson()" class="w-8 h-8 rounded-full hover:bg-slate-200 hover:text-brand-600 transition-colors disabled:opacity-30 disabled:pointer-events-none" title="השיעור הבא">
-                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                            <i class="fa-solid fa-chevron-left text-xs" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
@@ -355,7 +356,7 @@
 
             <!-- AI Tutor Sidebar -->
             <button id="chat-fab" onpointerdown="app.onChatPointerDown()" onclick="app.openChat()" class="md:hidden fixed bottom-5 left-5 z-20 w-14 h-14 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg flex items-center justify-center text-xl" title="שאל את המורה">
-                <i class="fa-solid fa-comments"></i>
+                <i class="fa-solid fa-comments" aria-hidden="true"></i>
             </button>
 
             <div id="chat-panel" onpointerdown="app.onChatPointerDown()" class="fixed inset-x-0 bottom-0 z-30 h-[70dvh] rounded-t-2xl shadow-2xl translate-y-full transition-transform duration-300 md:static md:z-auto md:h-auto md:w-80 lg:w-96 md:rounded-none md:shadow-none md:translate-y-0 border-r border-slate-200 bg-slate-50 flex flex-col shrink-0 overflow-hidden">
@@ -368,11 +369,11 @@
                         <p class="text-xs text-slate-500">שאלות על הטקסט? אני כאן.</p>
                     </div>
                     <button onclick="app.closeChat()" class="md:hidden mr-auto text-slate-400 hover:text-slate-600 p-2" title="סגור">
-                        <i class="fa-solid fa-xmark text-lg"></i>
+                        <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
                     </button>
                 </div>
                 
-                <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <div id="chat-messages" class="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4">
                     <div class="flex items-start gap-2">
                         <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
                             <i class="fa-solid fa-robot text-xs text-indigo-600"></i>
@@ -388,7 +389,7 @@
                         <i class="fa-solid fa-highlighter text-indigo-500 text-xs mt-1"></i>
                         <p id="chat-focus-text" class="flex-1 text-xs text-slate-700 line-clamp-2"></p>
                         <button onclick="app.clearChatFocus()" class="text-slate-400 hover:text-slate-600 px-1" title="בטל את הסימון">
-                            <i class="fa-solid fa-xmark text-xs"></i>
+                            <i class="fa-solid fa-xmark text-xs" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="flex gap-2 mt-2">
@@ -401,8 +402,8 @@
                 <div class="p-3 bg-white border-t border-slate-200">
                     <form id="chat-form" onsubmit="app.handleChatSubmit(event)" class="relative">
                         <input type="text" id="chat-input" placeholder="שאל שאלה על השיעור..." class="w-full bg-slate-100 border-none rounded-full py-3 pr-4 pl-12 text-sm focus:ring-2 focus:ring-brand-500 outline-none" required>
-                        <button type="submit" id="chat-submit-btn" class="absolute left-1.5 top-1.5 bottom-1.5 w-9 bg-brand-600 hover:bg-brand-700 text-white rounded-full flex items-center justify-center transition-colors">
-                            <i class="fa-solid fa-paper-plane text-xs"></i>
+                        <button type="submit" id="chat-submit-btn" title="שלח" class="absolute left-1.5 top-1.5 bottom-1.5 w-9 bg-brand-600 hover:bg-brand-700 text-white rounded-full flex items-center justify-center transition-colors">
+                            <i class="fa-solid fa-paper-plane text-xs" aria-hidden="true"></i>
                         </button>
                     </form>
                 </div>
@@ -416,8 +417,8 @@
         <div class="relative bg-white rounded-2xl shadow-xl w-[calc(100%-2rem)] max-w-lg max-h-[90dvh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="create-modal-content">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                 <h3 id="create-modal-title" class="font-bold text-lg text-slate-800">צור קורס חדש</h3>
-                <button onclick="app.closeCreateModal()" class="text-slate-400 hover:text-slate-600">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                <button onclick="app.closeCreateModal()" class="text-slate-400 hover:text-slate-600" title="סגור">
+                    <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
                 </button>
             </div>
             
@@ -510,8 +511,8 @@
         <div class="bg-white rounded-2xl shadow-xl w-[calc(100%-2rem)] max-w-md max-h-[90dvh] overflow-y-auto transform scale-95 transition-transform duration-300" id="settings-modal-content">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <h3 class="font-bold text-lg text-slate-800">הגדרות</h3>
-                <button onclick="app.closeSettingsModal()" class="text-slate-400 hover:text-slate-600" id="close-settings-btn">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                <button onclick="app.closeSettingsModal()" class="text-slate-400 hover:text-slate-600" id="close-settings-btn" title="סגור">
+                    <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
                 </button>
             </div>
             
@@ -620,7 +621,7 @@
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
                 <h3 class="font-bold text-lg text-slate-800"><i class="fa-solid fa-bell text-brand-600 ml-1"></i> תזכורת לקורס</h3>
                 <button onclick="app.closeReminderModal()" class="text-slate-400 hover:text-slate-600" title="סגור">
-                    <i class="fa-solid fa-xmark text-lg"></i>
+                    <i class="fa-solid fa-xmark text-lg" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="p-6">
@@ -668,6 +669,7 @@
                 chatHistory: [],
                 chatFocus: null,
                 focusLocked: false,
+                chatInHistory: false,
                 themePref: null
             },
             
@@ -725,6 +727,7 @@
                         course.syllabus.forEach((l, i) => {
                             if (l.completed === undefined) l.completed = i < (course.progress || 0);
                         });
+                        course.numLessons = course.syllabus.length; // older versions saved the requested count
                         window.app.updateProgress(course);
                     });
                 } else {
@@ -821,17 +824,51 @@
             // Another window of the app (e.g. the installed app and a browser tab) saved: take its data,
             // so this window shows it and its next save doesn't overwrite it
             onStorage: (e) => {
+                const s = window.app.state;
                 if (e.key === null || e.key === 'smartlearn_theme') {
-                    window.app.state.themePref = localStorage.getItem('smartlearn_theme');
+                    s.themePref = localStorage.getItem('smartlearn_theme');
                     window.app.applyTheme();
+                }
+                if (e.key === null || e.key === 'smartlearn_api_key') window.app.resetModels();
+                if (e.key === null || e.key === 'smartlearn_pending_course') {
+                    try { s.pendingCourse = JSON.parse(localStorage.getItem('smartlearn_pending_course')); } catch (err) { s.pendingCourse = null; }
+                    // A syllabus approved or discarded in the other window can't be approved again here
+                    const reviewing = !document.getElementById('create-modal').classList.contains('hidden') &&
+                        !document.getElementById('syllabus-review').classList.contains('hidden');
+                    if (reviewing && !s.isGeneratingContent) {
+                        if (s.pendingCourse) window.app.renderSyllabusReview();
+                        else window.app.closeCreateModal();
+                    }
                 }
                 if (e.key !== null && e.key !== 'smartlearn_courses') return;
                 window.app.loadCoursesFromStorage();
+                window.app.refreshCourseView();
+            },
+
+            // The courses were replaced underneath the screen (another window, a restored backup): show the new data
+            refreshCourseView: () => {
                 const s = window.app.state;
-                if (s.view === 'dashboard') window.app.renderDashboard();
-                else if (!window.app.getCurrentCourse()) window.app.navigate('dashboard'); // deleted in the other window
-                else if (s.view === 'syllabus') window.app.openCourse(s.currentCourseId, true, true);
-                // An open lesson stays as is - it reads the course again through getCurrentCourse()
+                const course = window.app.getCurrentCourse();
+                if (s.view === 'dashboard') {
+                    window.app.renderDashboard();
+                } else if (!course) { // deleted
+                    window.app.closeReminderModal(true); // the dashboard takes over its history entry
+                    window.app.navigate('dashboard');
+                } else if (s.view === 'syllabus' || !course.syllabus[s.currentLessonIndex]) {
+                    window.app.openCourse(course.id, true, s.view === 'syllabus');
+                } else if (course.syllabus[s.currentLessonIndex].contentData) {
+                    // The open lesson keeps its text and reading position; its buttons follow the new data
+                    window.app.updateLessonButtons(course, s.currentLessonIndex);
+                }
+            },
+
+            fillSettingsDefaults: () => {
+                const d = window.app.getCourseDefaults();
+                document.getElementById('settings-lessons').value = d.numLessons;
+                document.getElementById('settings-persona').value = d.persona;
+                const r = window.app.getReminderPrefs();
+                document.getElementById('reminder-days').value = r.days;
+                document.getElementById('reminder-time').value = r.time;
             },
 
             openSettingsModal: (forceClose = false) => {
@@ -839,14 +876,9 @@
                 const c = document.getElementById('settings-modal-content');
                 const currentKey = window.app.getApiKey();
                 document.getElementById('input-api-key').value = currentKey || '';
-                const d = window.app.getCourseDefaults();
-                document.getElementById('settings-lessons').value = d.numLessons;
-                document.getElementById('settings-persona').value = d.persona;
+                window.app.fillSettingsDefaults();
                 document.getElementById('settings-notify').checked = window.app.getNotifyPref();
                 window.app.updateNotifyHint();
-                const r = window.app.getReminderPrefs();
-                document.getElementById('reminder-days').value = r.days;
-                document.getElementById('reminder-time').value = r.time;
                 window.app.updateStorageInfo();
                 
                 if (forceClose) {
@@ -880,13 +912,7 @@
                     window.app.showToast('יש להזין מפתח API');
                     return;
                 }
-                if (key !== window.app.getApiKey()) {
-                    // Another key may have other models and permissions
-                    window.app.workingModel = null;
-                    window.app.discoveredModels = null;
-                    window.app.unavailableModels.clear();
-                    window.app.noThinkingConfig.clear();
-                }
+                if (key !== window.app.getApiKey()) window.app.resetModels();
                 localStorage.setItem('smartlearn_api_key', key);
                 const numLessons = Math.min(30, Math.max(1, parseInt(document.getElementById('settings-lessons').value) || 5));
                 const persona = document.getElementById('settings-persona').value;
@@ -904,7 +930,7 @@
                 try { reminder = JSON.parse(localStorage.getItem('smartlearn_reminder')); } catch (e) {}
                 // The API key is deliberately left out - a backup file may end up shared or synced
                 const data = { app: 'smartlearn', version: 1, exportedAt: new Date().toISOString(), courses: window.app.state.courses, defaults, reminder };
-                window.app.downloadFile(`smartlearn-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(data), 'application/json');
+                window.app.downloadFile(`smartlearn-backup-${new Date().toLocaleDateString('en-CA')}.json`, JSON.stringify(data), 'application/json');
                 window.app.showToast('הגיבוי נשמר בתיקיית ההורדות');
             },
 
@@ -944,14 +970,15 @@
                 if (data.defaults && !localStorage.getItem('smartlearn_defaults')) localStorage.setItem('smartlearn_defaults', JSON.stringify(data.defaults));
                 if (data.reminder && !localStorage.getItem('smartlearn_reminder')) localStorage.setItem('smartlearn_reminder', JSON.stringify(data.reminder));
                 window.app.applyCourseDefaults();
+                window.app.fillSettingsDefaults(); // settings is open: so saving it doesn't write the old values back
                 if (window.app.saveCoursesToStorage()) window.app.showToast(`שוחזרו ${courses.length} קורסים!`);
                 window.app.updateStorageInfo();
-                window.app.renderDashboard();
+                window.app.refreshCourseView();
             },
 
             updateStorageInfo: () => {
                 const chars = (localStorage.getItem('smartlearn_courses') || '').length;
-                const mb = chars * 2 / (1024 * 1024); // browsers store text as UTF-16
+                const mb = chars / (1024 * 1024); // the ~5MB limit counts characters (Chrome, Firefox)
                 const size = mb < 0.1 ? 'פחות מ-0.1MB' : `בערך ${mb.toFixed(1)}MB`;
                 document.getElementById('storage-info').textContent = `${window.app.state.courses.length} קורסים במכשיר · נפח ${size} מתוך כ-5MB`;
             },
@@ -1000,10 +1027,15 @@
 
             handleOpenTarget: (open) => {
                 if (!open) return;
+                // A dialog left open would cover the screen we open. Its history entry is taken over by that screen
+                // (navigate replaces a dialog's entry) - history.back() here would run after the new entries and undo them.
+                window.app.closeSettingsModal(true);
+                window.app.closeReminderModal(true);
                 if (open === 'syllabus') {
                     if (window.app.state.pendingCourse) window.app.openCreateModal();
                     return;
                 }
+                if (!window.app.state.isGeneratingContent) window.app.closeCreateModal(true);
                 const [kind, courseId, index] = open.split(':');
                 const lessonIndex = parseInt(index);
                 const course = window.app.state.courses.find(c => c.id === courseId);
@@ -1013,7 +1045,10 @@
                 }
                 if (kind !== 'lesson' || !course || !course.syllabus[lessonIndex]) return;
                 if (window.app.isViewingLesson(courseId, lessonIndex)) return;
-                window.app.openCourse(courseId); // under the lesson in history, so back leads to the syllabus
+                const s = window.app.state;
+                // The syllabus goes under the lesson in history, so back leads there (already so inside this course)
+                if (s.view === 'dashboard' || s.currentCourseId !== courseId) window.app.openCourse(courseId);
+                else s.currentCourseId = courseId;
                 window.app.startLesson(lessonIndex);
             },
 
@@ -1042,10 +1077,10 @@
                 if (scope === 'course') {
                     const course = window.app.getCurrentCourse();
                     course.reminder = { days, time };
-                    window.app.saveCoursesToStorage();
+                    const saved = window.app.saveCoursesToStorage();
                     window.app.updateReminderBell(course);
                     return {
-                        days, start, end,
+                        days, start, end, saved,
                         title: `בוא נלמד ${course.topic}! 📚`,
                         // The link in the calendar event opens this course
                         url: `${window.app.appUrl()}?open=${encodeURIComponent('course:' + course.id)}`,
@@ -1118,7 +1153,7 @@
                 window.app.downloadFile(scope === 'course' ? 'smartlearn-course-reminder.ics' : 'smartlearn-reminder.ics',
                     lines.map(fold).join('\r\n') + '\r\n', 'text/calendar;charset=utf-8');
                 if (scope === 'course') window.app.closeReminderModal();
-                window.app.showToast('הקובץ ירד - פתח אותו כדי להוסיף את התזכורת ליומן');
+                if (r.saved !== false) window.app.showToast('הקובץ ירד - פתח אותו כדי להוסיף את התזכורת ליומן'); // else the storage-full message stays
             },
 
             // Bell in the course header: solid once a reminder was created for this course
@@ -1203,6 +1238,7 @@
                 window.app.closeCreateModal(true);
                 window.app.closeSettingsModal(true);
                 window.app.closeReminderModal(true);
+                window.app.closeChat(true);
             },
 
             navigate: (viewId, fromHistory = false) => {
@@ -1335,6 +1371,14 @@
             discoveredModels: null,
             unavailableModels: new Set(),
             noThinkingConfig: new Set(),
+
+            // Another API key may have other models and permissions
+            resetModels: () => {
+                window.app.workingModel = null;
+                window.app.discoveredModels = null;
+                window.app.unavailableModels.clear();
+                window.app.noThinkingConfig.clear();
+            },
 
             // Fallback list used only when ListModels fails - fast "flash" models first
             fallbackModels: ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-3.1-pro-preview'],
@@ -1532,7 +1576,13 @@
                                 // Filter out thinking/reasoning parts from thinking models
                                 let text = parts.filter(p => !p.thought).map(p => p.text || '').join('');
                                 if (!text && parts.length > 0) text = parts[0].text || '';
-                                if (!text) throw new Error("Gemini returned an empty answer."); // e.g. blocked for safety
+                                if (!text) {
+                                    // Blocked (safety, recitation...): asking again won't help
+                                    const blocked = candidate.finishReason && candidate.finishReason !== 'STOP';
+                                    const empty = new Error(blocked ? `Gemini לא הסכים לענות על זה (${candidate.finishReason}).` : "Gemini returned an empty answer.");
+                                    empty.final = blocked;
+                                    throw empty;
+                                }
 
                                 if (schema) {
                                     text = window.app.cleanJsonResponse(text);
@@ -1540,7 +1590,10 @@
                                 }
                                 return text;
                             } else {
-                                throw new Error("No candidates returned from Gemini.");
+                                const reason = result.promptFeedback && result.promptFeedback.blockReason; // the question itself was blocked
+                                const none = new Error(reason ? `Gemini לא הסכים לענות על זה (${reason}).` : "No candidates returned from Gemini.");
+                                none.final = !!reason;
+                                throw none;
                             }
                         } catch (e) {
                             console.warn(`Gemini API Error (${model}, Attempt ${i+1}):`, e);
@@ -1659,7 +1712,7 @@
                 list.innerHTML = p.lessons.map((l, i) => `
                     <li class="flex gap-3">
                         <span class="w-6 h-6 rounded-full bg-brand-50 text-brand-600 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">${i + 1}</span>
-                        <div>
+                        <div class="min-w-0">
                             <div class="font-medium text-slate-800 text-sm">${esc(l.title)}</div>
                             <div class="text-xs text-slate-500 mt-0.5">${esc(l.summary)}</div>
                         </div>
@@ -1797,8 +1850,8 @@ ${JSON.stringify(p.lessons)}
                     // In reorder mode the icon is replaced with move up / down buttons
                     const corner = reordering ? `
                             <div class="flex items-center gap-1 shrink-0">
-                                <button onclick="app.moveCourse(${i}, -1)" class="${arrowCls}" title="הזז למעלה" ${i === 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-up"></i></button>
-                                <button onclick="app.moveCourse(${i}, 1)" class="${arrowCls}" title="הזז למטה" ${i === courses.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-arrow-down"></i></button>
+                                <button onclick="app.moveCourse(${i}, -1)" class="${arrowCls}" title="הזז למעלה" ${i === 0 ? 'disabled' : ''}><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></button>
+                                <button onclick="app.moveCourse(${i}, 1)" class="${arrowCls}" title="הזז למטה" ${i === courses.length - 1 ? 'disabled' : ''}><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></button>
                             </div>` : `
                             <div class="w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
                                 <i class="fa-solid fa-book-bookmark"></i>
@@ -1953,7 +2006,7 @@ ${JSON.stringify(p.lessons)}
 
                     el.innerHTML = `
                         <div class="mt-1 w-6 flex justify-center shrink-0 text-lg">${icon}</div>
-                        <div class="flex-1">
+                        <div class="flex-1 min-w-0">
                             <h4 class="font-bold text-slate-800 mb-1">שיעור ${index + 1}: ${window.app.escapeHtml(lesson.title)}</h4>
                             <p class="text-sm text-slate-600">${window.app.escapeHtml(lesson.summary)}</p>
                         </div>
@@ -1995,7 +2048,7 @@ ${JSON.stringify(p.lessons)}
 
                 window.app.state.chatHistory = [];
                 window.app.clearChatFocus();
-                window.app.closeChat();
+                window.app.closeChat(true); // the new lesson takes over the sheet's history entry
                 document.getElementById('chat-messages').innerHTML = `
                     <div class="flex items-start gap-2">
                         <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
@@ -2047,21 +2100,33 @@ ${JSON.stringify(p.lessons)}
                 document.getElementById('lesson-retry-btn').classList.remove('hidden');
             },
 
-            // Lesson HTML comes from the model: drop anything that could restyle or script the app,
-            // and open links in a new tab instead of navigating away from the app
+            // Lesson HTML comes from the model (or a restored backup), so only plain text formatting is kept - an allowlist.
+            // A blocklist isn't enough: the cleaned HTML is parsed again when shown, and SVG/MathML/raw-text tricks
+            // turn back into live elements; names/ids shadow document.getElementById etc.
+            lessonTags: new Set(['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'BR', 'HR', 'UL', 'OL', 'LI', 'DL', 'DT', 'DD',
+                'B', 'STRONG', 'I', 'EM', 'U', 'S', 'DEL', 'INS', 'MARK', 'SMALL', 'SUB', 'SUP', 'Q', 'CITE', 'ABBR',
+                'BLOCKQUOTE', 'PRE', 'CODE', 'KBD', 'SAMP', 'VAR', 'TABLE', 'CAPTION', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TH', 'TD',
+                'A', 'SPAN', 'DIV', 'SECTION', 'ARTICLE', 'FIGURE', 'FIGCAPTION', 'DETAILS', 'SUMMARY']),
+
             sanitizeHtml: (html) => {
                 const tpl = document.createElement('template'); // inert: nothing loads or runs while we clean it
                 tpl.innerHTML = html;
-                tpl.content.querySelectorAll('script, style, link, meta, base, iframe, frame, object, embed, form, input, button, textarea, select').forEach(el => el.remove());
-                tpl.content.querySelectorAll('*').forEach(el => {
-                    for (const attr of [...el.attributes]) {
-                        const name = attr.name.toLowerCase();
-                        if (name.startsWith('on') || ['style', 'class', 'id', 'color', 'bgcolor', 'background'].includes(name) ||
-                            (['href', 'src', 'xlink:href', 'action'].includes(name) && /^\s*(javascript|data):/i.test(attr.value))) {
-                            el.removeAttribute(attr.name);
-                        }
+                // Deepest first, so unwrapping an element never skips its children
+                [...tpl.content.querySelectorAll('*')].reverse().forEach(el => {
+                    if (el.namespaceURI !== 'http://www.w3.org/1999/xhtml' || !window.app.lessonTags.has(el.tagName)) {
+                        // Code, media, embeds and forms go with their content; other wrappers leave their text
+                        if (/^(script|style|template|svg|math|iframe|frame|object|embed|noscript|noembed|noframes|xmp|plaintext|textarea|title|select|button|input|img|picture|video|audio|canvas|map|form|link|meta|base)$/i.test(el.localName)) el.remove();
+                        else el.replaceWith(...el.childNodes);
+                        return;
                     }
-                    if (el.tagName === 'A') {
+                    for (const attr of [...el.attributes]) {
+                        // Browsers ignore tabs, newlines and control characters inside a URL scheme ("java&#9;script:")
+                        const safeLink = attr.name === 'href' && el.tagName === 'A' && /^(https?|mailto):/i.test(attr.value.replace(/[\u0000-\u0020]+/g, ''));
+                        const number = ['colspan', 'rowspan', 'start'].includes(attr.name) && /^\d{1,3}$/.test(attr.value);
+                        if (!safeLink && !number) el.removeAttribute(attr.name);
+                    }
+                    // Open links in a new tab instead of navigating away from the app
+                    if (el.hasAttribute('href')) {
                         el.setAttribute('target', '_blank');
                         el.setAttribute('rel', 'noopener noreferrer');
                     }
@@ -2081,6 +2146,9 @@ ${JSON.stringify(p.lessons)}
                 // Drop a half-written tag at the end so it doesn't flash as raw text
                 const html = window.app.cleanLessonHtml(text).replace(/<[^>]*$/, '');
                 if (!html) return;
+                // Don't rebuild text the user is selecting - the next chunk or the finished lesson shows the rest
+                const sel = document.getSelection();
+                if (sel && !sel.isCollapsed && document.getElementById('lesson-content').contains(sel.anchorNode)) return;
                 document.getElementById('lesson-loading').classList.add('hidden');
                 document.getElementById('lesson-content').innerHTML = window.app.sanitizeHtml(html);
                 window.app.isolateLatin(document.getElementById('lesson-content'));
@@ -2132,13 +2200,13 @@ ${JSON.stringify(p.lessons)}
                     course = window.app.state.courses.find(c => c.id === course.id);
                     if (!course) return;
                     course.syllabus[lessonIndex].contentData = { content, quiz: null };
-                    window.app.saveCoursesToStorage();
+                    const saved = window.app.saveCoursesToStorage();
                     if (!gen.background) window.app.notify(`שיעור ${lessonIndex + 1} מוכן! 📖`, currentLesson.title, `lesson:${course.id}:${lessonIndex}`);
 
                     if (window.app.isViewingLesson(course.id, lessonIndex)) {
                         window.app.renderLesson(course, lessonIndex);
                     } else {
-                        if (!gen.background) window.app.showToast(`שיעור ${lessonIndex + 1} מוכן!`);
+                        if (!gen.background && saved) window.app.showToast(`שיעור ${lessonIndex + 1} מוכן!`); // else the storage-full message stays
                         const s = window.app.state;
                         // Refresh in place - without touching history, which may belong to an open dialog
                         if (s.view === 'syllabus' && s.currentCourseId === course.id) window.app.openCourse(course.id, true, true);
@@ -2146,7 +2214,10 @@ ${JSON.stringify(p.lessons)}
                 } catch(error) {
                     delete window.app.generations[key];
                     console.error("Lesson generation failed", error);
+                    const s = window.app.state;
                     if (window.app.isViewingLesson(course.id, lessonIndex)) window.app.showLessonError(error);
+                    // e.g. written ahead in the background: the row goes back from "נכתב עכשיו..." to "צור שיעור"
+                    else if (s.view === 'syllabus' && s.currentCourseId === course.id) window.app.openCourse(course.id, true, true);
                 }
             },
 
@@ -2155,6 +2226,7 @@ ${JSON.stringify(p.lessons)}
                 document.getElementById('lesson-loading').classList.add('hidden');
                 document.getElementById('lesson-streaming').classList.add('hidden');
                 document.getElementById('lesson-content').innerHTML = window.app.sanitizeHtml(lessonData.content);
+                window.app.onSelectionChange(); // a selection made while it was being written is gone now
 
                 window.app.isolateLatin(document.getElementById('lesson-content'));
                 window.app.updateLessonButtons(course, lessonIndex);
@@ -2296,7 +2368,8 @@ ${lessonText}
                     // Look the course up again: it may have been deleted, or reloaded from another window, meanwhile
                     course = window.app.state.courses.find(c => c.id === course.id);
                     const saved = course && course.syllabus[lessonIndex].contentData;
-                    if (saved) {
+                    // Another window may have saved its own quiz meanwhile - keep that one, so both windows grade the same questions
+                    if (saved && window.app.validQuiz(saved.quiz).length === 0) {
                         saved.quiz = quiz;
                         window.app.saveCoursesToStorage();
                     }
@@ -2305,7 +2378,7 @@ ${lessonText}
                     failed = true;
                 }
                 delete window.app.generations[key];
-                if (!course) return;
+                if (!course || !course.syllabus[lessonIndex].contentData) return; // deleted / restored from an older backup
 
                 if (!window.app.isViewingLesson(course.id, lessonIndex)) return;
                 if (failed) {
@@ -2363,41 +2436,70 @@ ${lessonText}
             // --- NotebookLM: it has no public API for personal accounts, so we export Markdown files to upload as sources ---
             htmlToMarkdown: (html) => {
                 const doc = new DOMParser().parseFromString(window.app.sanitizeHtml(html), 'text/html');
-                const inline = (node) => [...node.childNodes].map(n => {
+                const BLOCK = /^(H[1-6]|P|UL|OL|PRE|BLOCKQUOTE|TABLE|HR|DIV|SECTION|ARTICLE|FIGURE|FIGCAPTION|DL|DT|DD|DETAILS|SUMMARY)$/;
+                const isList = (n) => n.nodeType === Node.ELEMENT_NODE && (n.tagName === 'UL' || n.tagName === 'OL');
+                const inline = (nodes) => nodes.map(n => {
                     if (n.nodeType === Node.TEXT_NODE) return n.textContent.replace(/\s+/g, ' ');
                     if (n.nodeType !== Node.ELEMENT_NODE) return '';
-                    const tag = n.tagName, inner = inline(n);
-                    if (tag === 'B' || tag === 'STRONG') return inner.trim() ? `**${inner.trim()}**` : '';
-                    if (tag === 'EM' || tag === 'I') return inner.trim() ? `*${inner.trim()}*` : '';
+                    const tag = n.tagName, inner = inline([...n.childNodes]);
+                    // Spaces stay outside the markers ("**הגדרה:** משתנה") - inside, the words stick together and the bold doesn't show
+                    const mark = (m) => inner.trim() ? inner.match(/^\s*/)[0] + m + inner.trim() + m + inner.match(/\s*$/)[0] : inner;
+                    if (tag === 'B' || tag === 'STRONG') return mark('**');
+                    if (tag === 'EM' || tag === 'I') return mark('*');
                     if (tag === 'CODE') return '`' + n.textContent + '`';
                     if (tag === 'BR') return '\n';
                     if (tag === 'A' && n.getAttribute('href')) return `[${inner.trim()}](${n.getAttribute('href')})`;
+                    if (BLOCK.test(tag)) return ` ${inner} `; // e.g. paragraphs inside a list item
                     return inner;
                 }).join('');
-                const blocks = (node, out) => {
-                    for (const n of node.childNodes) {
-                        if (n.nodeType === Node.TEXT_NODE) {
-                            if (n.textContent.trim()) out.push(n.textContent.trim());
-                            continue;
-                        }
-                        if (n.nodeType !== Node.ELEMENT_NODE) continue;
-                        const tag = n.tagName;
-                        if (/^H[1-6]$/.test(tag)) out.push('#'.repeat(Math.max(2, +tag[1])) + ' ' + inline(n).trim());
-                        else if (tag === 'P') out.push(inline(n).trim());
-                        else if (tag === 'UL' || tag === 'OL') {
-                            out.push([...n.children].filter(li => li.tagName === 'LI')
-                                .map((li, i) => (tag === 'OL' ? `${i + 1}. ` : '- ') + inline(li).trim()).join('\n'));
-                        }
-                        else if (tag === 'PRE') out.push('```\n' + n.textContent.replace(/\n$/, '') + '\n```');
-                        else if (tag === 'BLOCKQUOTE') out.push(inline(n).trim().split('\n').map(l => '> ' + l).join('\n'));
-                        else if (tag === 'TABLE') {
-                            const rows = [...n.querySelectorAll('tr')].map(tr => [...tr.children].map(c => inline(c).trim().replace(/\|/g, '\\|')));
-                            if (rows.length) out.push([`| ${rows[0].join(' | ')} |`, `|${rows[0].map(() => ' --- |').join('')}`,
-                                ...rows.slice(1).map(r => `| ${r.join(' | ')} |`)].join('\n'));
-                        }
-                        else if (tag === 'HR') out.push('---');
-                        else blocks(n, out);
+                // Each item's text, then its sub-lists indented under it (also a sub-list placed straight in the list)
+                const list = (el, depth) => {
+                    let num = 0;
+                    return [...el.children].map(item => {
+                        if (isList(item)) return list(item, depth + 1);
+                        if (item.tagName !== 'LI') return '';
+                        const text = inline([...item.childNodes].filter(c => !isList(c))).replace(/\s+/g, ' ').trim();
+                        const line = '   '.repeat(depth) + (el.tagName === 'OL' ? `${++num}. ` : '- ') + text;
+                        return [line, ...[...item.children].filter(isList).map(sub => list(sub, depth + 1))].join('\n');
+                    }).filter(Boolean).join('\n');
+                };
+                const block = (n, out) => {
+                    const tag = n.tagName;
+                    if (/^H[1-6]$/.test(tag)) out.push('#'.repeat(Math.max(2, +tag[1])) + ' ' + inline([...n.childNodes]).trim());
+                    else if (tag === 'P') out.push(inline([...n.childNodes]).trim());
+                    else if (tag === 'UL' || tag === 'OL') out.push(list(n, 0));
+                    else if (tag === 'PRE') out.push('```\n' + n.textContent.replace(/\n$/, '') + '\n```');
+                    else if (tag === 'BLOCKQUOTE') {
+                        const inner = [];
+                        blocks(n, inner);
+                        out.push(inner.join('\n\n').split('\n').map(l => ('> ' + l).trimEnd()).join('\n'));
                     }
+                    else if (tag === 'TABLE') {
+                        // One line per row: a line break inside a cell would split the table
+                        const rows = [...n.querySelectorAll('tr')].map(tr => [...tr.children].map(c => inline([...c.childNodes]).replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|')));
+                        if (rows.length) out.push([`| ${rows[0].join(' | ')} |`, `|${rows[0].map(() => ' --- |').join('')}`,
+                            ...rows.slice(1).map(r => `| ${r.join(' | ')} |`)].join('\n'));
+                    }
+                    else if (tag === 'HR') out.push('---');
+                    else blocks(n, out);
+                };
+                // Text and inline elements next to each other make one paragraph
+                const blocks = (node, out) => {
+                    let run = [];
+                    const flush = () => {
+                        const text = inline(run).trim();
+                        if (text) out.push(text);
+                        run = [];
+                    };
+                    for (const n of node.childNodes) {
+                        if (n.nodeType === Node.ELEMENT_NODE && BLOCK.test(n.tagName)) {
+                            flush();
+                            block(n, out);
+                        } else {
+                            run.push(n);
+                        }
+                    }
+                    flush();
                 };
                 const out = [];
                 blocks(doc.body, out);
@@ -2499,6 +2601,9 @@ ${lessonText}
                     }
                     const text = sel.toString().replace(/\s+/g, ' ').trim();
                     if (text.length < 2) return;
+                    // Not taken to the chat yet - a focus kept by "שאלה אחרת" for an earlier selection no longer holds
+                    window.app.state.focusLocked = false;
+                    document.getElementById('chat-input').placeholder = 'שאל שאלה על השיעור...';
                     window.app.setChatFocus(text.slice(0, 600));
                     document.getElementById('selection-bar-text').textContent = `"${text.slice(0, 120)}"`;
                     bar.classList.remove('hidden');
@@ -2596,11 +2701,22 @@ ${lessonText}
             openChat: () => {
                 // A focus that wasn't taken to the chat (selection cancelled / stale) is dropped -> general chat
                 if (!window.app.state.focusLocked) window.app.clearChatFocus();
-                document.getElementById('chat-panel').classList.remove('translate-y-full');
+                const panel = document.getElementById('chat-panel');
+                if (!panel.classList.contains('translate-y-full')) return;
+                panel.classList.remove('translate-y-full');
+                // On phones the chat is a sheet over the lesson: like a dialog, the back button closes it
+                if (!window.matchMedia('(min-width: 768px)').matches) {
+                    window.app.pushModalState();
+                    window.app.state.chatInHistory = true;
+                }
             },
 
-            closeChat: () => {
+            // fromHistory: the back button, or a new screen that takes over the sheet's history entry
+            closeChat: (fromHistory = false) => {
                 document.getElementById('chat-panel').classList.add('translate-y-full');
+                if (!window.app.state.chatInHistory) return;
+                window.app.state.chatInHistory = false;
+                if (!fromHistory) window.app.popModalState();
             },
 
             handleChatSubmit: (e) => {
@@ -2675,8 +2791,12 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
 
             appendChatMessage: (role, text) => {
                 const msgContainer = document.getElementById('chat-messages');
-                // Escape, then allow simple **bold** from the model
-                const safe = window.app.escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+                // Escape, then allow simple **bold** and `code` / ```code blocks``` from the model.
+                // Code is left-to-right as a whole - otherwise the Hebrew bubble reorders its parts.
+                const safe = window.app.escapeHtml(text).split(/(```[\s\S]*?```)/).map((part, i) => i % 2
+                    ? `<pre dir="ltr" class="my-1 p-2 rounded-lg bg-slate-900 text-slate-100 text-xs overflow-x-auto">${part.replace(/^```[^\n]*\n?/, '').replace(/\n?```$/, '')}</pre>`
+                    : part.replace(/`([^`\n]+)`/g, '<code dir="ltr">$1</code>').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+                ).join('');
                 let html = '';
                 if (role === 'user') {
                     html = `
@@ -2684,7 +2804,7 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
                             <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0 text-slate-500">
                                 <i class="fa-solid fa-user text-xs"></i>
                             </div>
-                            <div class="bg-brand-600 text-white rounded-2xl rounded-tl-none p-3 text-sm shadow-sm">
+                            <div class="min-w-0 break-words bg-brand-600 text-white rounded-2xl rounded-tl-none p-3 text-sm shadow-sm">
                                 ${safe}
                             </div>
                         </div>
@@ -2695,7 +2815,7 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
                             <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
                                 <i class="fa-solid fa-robot text-xs text-indigo-600"></i>
                             </div>
-                            <div class="bg-white border border-slate-200 rounded-2xl rounded-tr-none p-3 text-sm text-slate-700 shadow-sm whitespace-pre-wrap">${safe}</div>
+                            <div class="min-w-0 break-words bg-white border border-slate-200 rounded-2xl rounded-tr-none p-3 text-sm text-slate-700 shadow-sm whitespace-pre-wrap">${safe}</div>
                         </div>
                     `;
                 }
