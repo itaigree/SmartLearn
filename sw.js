@@ -1,5 +1,5 @@
 // Keep in sync with the version shown in the header of index.html
-const CACHE_NAME = 'smartlearn-cache-v35';
+const CACHE_NAME = 'smartlearn-cache-v36';
 const urlsToCache = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', event => {

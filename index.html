@@ -169,7 +169,8 @@
         html.dark ::-webkit-scrollbar-thumb { background: #475569; }
         html.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         html.dark .loader { border-color: #334155; border-top-color: #0ea5e9; }
-        html.dark #theme-btn:not(:hover) { color: #fbbf24; } /* a yellow sun, so it doesn't read as a second settings gear */
+        html.dark #theme-btn { color: #fbbf24; } /* a yellow sun, so it doesn't read as a second settings gear */
+        @media (hover: hover) { html.dark #theme-btn:hover { color: #38bdf8; } } /* touch screens keep :hover after a tap */
 
         /* High-contrast mode drops the colors that mark the chosen theme option */
         @media (forced-colors: active) { #theme-options [aria-pressed="true"] { outline: 2px solid Highlight; } }
@@ -183,7 +184,7 @@
                 <div class="w-8 h-8 bg-brand-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
-                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v35</span></h1>
+                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v36</span></h1>
             </div>
 
             <div id="nav-actions" class="flex items-center min-[360px]:gap-4">
@@ -676,9 +677,9 @@
             init: () => {
                 window.app.state.themePref = localStorage.getItem('smartlearn_theme');
                 window.app.applyTheme();
-                const scheme = window.matchMedia('(prefers-color-scheme: dark)');
-                if (scheme.addEventListener) scheme.addEventListener('change', () => window.app.applyTheme());
-                else scheme.addListener(() => window.app.applyTheme()); // Safari before 14
+                window.app.watchMedia('(prefers-color-scheme: dark)', () => window.app.applyTheme());
+                // A phone turned to landscape shows the chat as a sidebar: the sheet's history entry has to go
+                window.app.watchMedia('(min-width: 768px)', (e) => { if (e.matches && window.app.state.chatInHistory) window.app.closeChat(); });
                 // Settings offers the same learning styles as the create-course form
                 document.getElementById('settings-persona').innerHTML = document.getElementById('input-persona').innerHTML;
                 window.app.applyCourseDefaults();
@@ -772,6 +773,12 @@
                 document.getElementById('input-persona').value = d.persona;
             },
 
+            watchMedia: (query, onChange) => {
+                const mq = window.matchMedia(query);
+                if (mq.addEventListener) mq.addEventListener('change', onChange);
+                else mq.addListener(onChange); // Safari before 14
+            },
+
             // --- Theme: 'light', 'dark' or 'auto' (follows the device) ---
             // Kept in state too, so switching still works when the storage is full
             getThemePref: () => {
@@ -859,6 +866,9 @@
                 } else if (course.syllabus[s.currentLessonIndex].contentData) {
                     // The open lesson keeps its text and reading position; its buttons follow the new data
                     window.app.updateLessonButtons(course, s.currentLessonIndex);
+                } else if (!document.getElementById('lesson-nav').classList.contains('hidden')) {
+                    // The lesson on screen isn't written in the new data (e.g. an older backup)
+                    window.app.openCourse(course.id, true);
                 }
             },
 
@@ -1027,25 +1037,28 @@
 
             handleOpenTarget: (open) => {
                 if (!open) return;
+                const s = window.app.state;
+                const [kind, courseId, index] = open.split(':');
+                const lessonIndex = parseInt(index);
+                const course = s.courses.find(c => c.id === courseId);
+                const showReview = open === 'syllabus' && s.pendingCourse;
+                const showCourse = kind === 'course' && course;
+                const showLesson = kind === 'lesson' && course && course.syllabus[lessonIndex] && !window.app.isViewingLesson(courseId, lessonIndex);
+                if (!showReview && !showCourse && !showLesson) return; // nothing to open - an open dialog stays as it is
+
                 // A dialog left open would cover the screen we open. Its history entry is taken over by that screen
                 // (navigate replaces a dialog's entry) - history.back() here would run after the new entries and undo them.
                 window.app.closeSettingsModal(true);
                 window.app.closeReminderModal(true);
-                if (open === 'syllabus') {
-                    if (window.app.state.pendingCourse) window.app.openCreateModal();
+                if (showReview) {
+                    window.app.openCreateModal();
                     return;
                 }
-                if (!window.app.state.isGeneratingContent) window.app.closeCreateModal(true);
-                const [kind, courseId, index] = open.split(':');
-                const lessonIndex = parseInt(index);
-                const course = window.app.state.courses.find(c => c.id === courseId);
-                if (kind === 'course' && course) {
+                if (!s.isGeneratingContent) window.app.closeCreateModal(true);
+                if (showCourse) {
                     window.app.openCourse(courseId);
                     return;
                 }
-                if (kind !== 'lesson' || !course || !course.syllabus[lessonIndex]) return;
-                if (window.app.isViewingLesson(courseId, lessonIndex)) return;
-                const s = window.app.state;
                 // The syllabus goes under the lesson in history, so back leads there (already so inside this course)
                 if (s.view === 'dashboard' || s.currentCourseId !== courseId) window.app.openCourse(courseId);
                 else s.currentCourseId = courseId;
@@ -1258,6 +1271,7 @@
                 }
                 
                 if (viewId !== 'dashboard') window.app.state.reorderMode = false;
+                if (viewId !== 'lesson') window.app.closeChat(true); // the new screen took over the sheet's history entry
                 const backBtn = document.getElementById('back-btn');
                 if (viewId === 'dashboard') {
                     backBtn.classList.add('hidden');
@@ -1271,7 +1285,13 @@
                 const s = window.app.state;
                 // Same as the phone's back button when we came here through the app
                 if (history.state && history.state.app && s.view !== 'dashboard' && history.length > 1) {
-                    history.back();
+                    if (s.chatInHistory && history.state.modal) {
+                        // The open tutor sheet has its own entry on top: step over it as well
+                        window.app.closeChat(true);
+                        history.go(-2);
+                    } else {
+                        history.back();
+                    }
                     return;
                 }
                 if (s.view === 'lesson') {
@@ -1434,6 +1454,9 @@
                 return null;
             },
 
+            // Gemini's reasons for refusing to answer - asking again won't help (others, like OTHER or RECITATION, may pass on a retry)
+            refusals: ['SAFETY', 'PROHIBITED_CONTENT', 'BLOCKLIST', 'SPII', 'IMAGE_SAFETY'],
+
             // Reads a streamGenerateContent (SSE) response, calling onText with the full text so far
             readStream: async (response, onText) => {
                 const reader = response.body.getReader();
@@ -1442,6 +1465,7 @@
                 let text = '';
                 let finishReason = null;
                 let gotCandidate = false;
+                let blockReason = null; // the question itself was refused
 
                 const handleEvent = (json) => {
                     const result = JSON.parse(json);
@@ -1450,6 +1474,7 @@
                         apiErr.status = result.error.code;
                         throw apiErr;
                     }
+                    if (result.promptFeedback && result.promptFeedback.blockReason) blockReason = result.promptFeedback.blockReason;
                     const candidate = result.candidates && result.candidates[0];
                     if (!candidate) return;
                     gotCandidate = true;
@@ -1474,6 +1499,7 @@
                 }
                 if (buffer.startsWith('data:')) handleEvent(buffer.slice(5).trim());
 
+                if (!gotCandidate && blockReason) throw Object.assign(new Error(`Gemini לא הסכים לענות על זה (${blockReason}).`), { final: true });
                 if (!gotCandidate) throw new Error("No candidates returned from Gemini.");
                 return { text, finishReason };
             },
@@ -1578,7 +1604,7 @@
                                 if (!text && parts.length > 0) text = parts[0].text || '';
                                 if (!text) {
                                     // Blocked (safety, recitation...): asking again won't help
-                                    const blocked = candidate.finishReason && candidate.finishReason !== 'STOP';
+                                    const blocked = window.app.refusals.includes(candidate.finishReason);
                                     const empty = new Error(blocked ? `Gemini לא הסכים לענות על זה (${candidate.finishReason}).` : "Gemini returned an empty answer.");
                                     empty.final = blocked;
                                     throw empty;
@@ -2115,7 +2141,7 @@ ${JSON.stringify(p.lessons)}
                 [...tpl.content.querySelectorAll('*')].reverse().forEach(el => {
                     if (el.namespaceURI !== 'http://www.w3.org/1999/xhtml' || !window.app.lessonTags.has(el.tagName)) {
                         // Code, media, embeds and forms go with their content; other wrappers leave their text
-                        if (/^(script|style|template|svg|math|iframe|frame|object|embed|noscript|noembed|noframes|xmp|plaintext|textarea|title|select|button|input|img|picture|video|audio|canvas|map|form|link|meta|base)$/i.test(el.localName)) el.remove();
+                        if (/^(script|style|template|svg|annotation|annotation-xml|iframe|frame|object|embed|noscript|noembed|noframes|xmp|plaintext|textarea|title|select|button|input|img|picture|video|audio|canvas|map|form|link|meta|base)$/i.test(el.localName)) el.remove();
                         else el.replaceWith(...el.childNodes);
                         return;
                     }
@@ -2123,7 +2149,8 @@ ${JSON.stringify(p.lessons)}
                         // Browsers ignore tabs, newlines and control characters inside a URL scheme ("java&#9;script:")
                         const safeLink = attr.name === 'href' && el.tagName === 'A' && /^(https?|mailto):/i.test(attr.value.replace(/[\u0000-\u0020]+/g, ''));
                         const number = ['colspan', 'rowspan', 'start'].includes(attr.name) && /^\d{1,3}$/.test(attr.value);
-                        if (!safeLink && !number) el.removeAttribute(attr.name);
+                        const dir = attr.name === 'dir' && /^(ltr|rtl|auto)$/i.test(attr.value.trim()); // e.g. an English quote
+                        if (!safeLink && !number && !dir) el.removeAttribute(attr.name);
                     }
                     // Open links in a new tab instead of navigating away from the app
                     if (el.hasAttribute('href')) {
@@ -2397,7 +2424,8 @@ ${lessonText}
             // isolates it, so punctuation around it follows the Hebrew sentence.
             isolateLatin: (root) => {
                 const token = "[A-Za-z](?:[A-Za-z0-9+#'._-]*[A-Za-z0-9+#])?";
-                const run = new RegExp(`${token}(?:[ \\u00A0]+(?:${token}|[0-9]+(?:[.,][0-9]+)*))*`, 'g');
+                // Spaces, and separators inside English like "TCP/IP" or a URL, continue a run when English follows
+                const run = new RegExp(`${token}(?:(?:[ \\u00A0]+|[/\\\\:@?&=%~]+)(?:${token}|[0-9]+(?:[.,][0-9]+)*))*`, 'g');
                 const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
                     acceptNode: (n) => (/[A-Za-z]/.test(n.nodeValue) && !n.parentElement.closest('pre, code, bdi, script, style'))
                         ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
@@ -2793,9 +2821,15 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
                 const msgContainer = document.getElementById('chat-messages');
                 // Escape, then allow simple **bold** and `code` / ```code blocks``` from the model.
                 // Code is left-to-right as a whole - otherwise the Hebrew bubble reorders its parts.
-                const safe = window.app.escapeHtml(text).split(/(```[\s\S]*?```)/).map((part, i) => i % 2
-                    ? `<pre dir="ltr" class="my-1 p-2 rounded-lg bg-slate-900 text-slate-100 text-xs overflow-x-auto">${part.replace(/^```[^\n]*\n?/, '').replace(/\n?```$/, '')}</pre>`
-                    : part.replace(/`([^`\n]+)`/g, '<code dir="ltr">$1</code>').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+                // ** inside code is code (Python's 2**10, **kwargs), not bold.
+                const inline = (part) => part.split(/(`[^`\n]+`)/).map((bit, j) => j % 2
+                    ? `<code dir="ltr">${bit.slice(1, -1)}</code>`
+                    : bit.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+                ).join('');
+                // A block ends its line: the line breaks around it would show as empty lines
+                const safe = window.app.escapeHtml(text).split(/\n?(```[\s\S]*?```)\n?/).map((part, i) => i % 2
+                    ? `<pre dir="ltr" class="my-1 p-2 rounded-lg bg-slate-900 text-slate-100 text-xs overflow-x-auto">${part.slice(3, -3).replace(/^[\w+#.-]*\n/, '').replace(/\n$/, '')}</pre>`
+                    : inline(part)
                 ).join('');
                 let html = '';
                 if (role === 'user') {
