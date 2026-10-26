@@ -1,16 +1,16 @@
 // Keep in sync with the version shown in the header of index.html
-const CACHE_NAME = 'smartlearn-cache-v37';
+const CACHE_NAME = 'smartlearn-cache-v38';
 const urlsToCache = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 // The design files the page loads from CDNs. Cached at install too: on the first visit the page loads them before
 // this worker runs, so otherwise the app would look broken offline until a second visit.
 const CDN_FILES = [
-  ['https://cdn.tailwindcss.com', 'no-cors'],
-  ['https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap', 'no-cors'],
-  ['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', 'no-cors'],
-  ['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2', 'cors'],
-  ['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-regular-400.woff2', 'cors'],
-  ['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2', 'cors']
+  'https://cdn.tailwindcss.com',
+  'https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-regular-400.woff2',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2'
 ];
 
 self.addEventListener('install', event => {
@@ -18,11 +18,12 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => Promise.all([
       cache.addAll(urlsToCache),
-      // Best effort: a CDN that is down must not stop the install (the page caches them later too).
-      // put() rather than add(): add() refuses the opaque (no-cors) responses.
-      ...CDN_FILES.map(([url, mode]) => fetch(new Request(url, { mode }))
-        .then(response => { if (response.ok || response.type === 'opaque') return cache.put(url, response); })
-        .catch(() => {}))
+      // Best effort, at most 10 s each: a CDN that is down or hangs must not hold up the install (the page caches
+      // them later too). CORS (these CDNs allow it) so an error page can be told apart and isn't cached.
+      ...CDN_FILES.map(url => Promise.race([
+        fetch(url, { mode: 'cors' }).then(response => { if (response.ok) return cache.put(url, response); }).catch(() => {}),
+        new Promise(resolve => setTimeout(resolve, 10000))
+      ]))
     ]))
   );
 });
@@ -51,11 +52,13 @@ self.addEventListener('fetch', event => {
   if (CDN_HOSTS.includes(url.hostname)) {
     event.respondWith(
       caches.open(CACHE_NAME).then(cache =>
-        cache.match(event.request).then(cached => {
+        // ignoreVary: copies cached at install were requested by this worker, not the page (other headers)
+        cache.match(event.request, { ignoreVary: true }).then(cached => {
           const network = fetch(event.request)
             .then(response => {
-              // Opaque (no-cors) responses have status 0 but are still usable
-              if (response && (response.ok || response.type === 'opaque')) cache.put(event.request, response.clone());
+              // Opaque (no-cors) responses have status 0 but are still usable - though they may be an error page,
+              // so one never replaces a copy we have
+              if (response && (response.ok || (response.type === 'opaque' && !cached))) cache.put(event.request, response.clone());
               return response;
             })
             .catch(() => cached);
