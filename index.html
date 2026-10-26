@@ -22,7 +22,7 @@
     </script>
     <style>
         /* Paints dark while the CDN scripts below are still loading */
-        html.dark { color-scheme: dark; background-color: #0f172a; }
+        @media screen { html.dark { color-scheme: dark; background-color: #0f172a; } }
     </style>
 
     <!-- Tailwind CSS -->
@@ -45,7 +45,7 @@
                             100: '#e0f2fe',
                             300: '#7dd3fc',
                             500: '#0ea5e9',
-                            600: '#0284c7',
+                            600: '#0279b8', // a touch darker than Tailwind's sky-600, so white text on it passes contrast (4.7:1)
                             700: '#0369a1',
                             900: '#0c4a6e',
                         }
@@ -87,7 +87,7 @@
         .lesson-content code { font-family: ui-monospace, monospace; unicode-bidi: isolate; direction: ltr; }
         .lesson-content table { display: block; overflow-x: auto; border-collapse: collapse; margin-bottom: 1rem; }
         .lesson-content th, .lesson-content td { border: 1px solid #e2e8f0; padding: 0.5rem 0.75rem; text-align: right; }
-        .lesson-content a { color: #0284c7; text-decoration: underline; }
+        .lesson-content a { color: #0279b8; text-decoration: underline; }
 
         /* Titles: let English words in them wrap (isolateLatin keeps short runs on one line) */
         #syllabus-title bdi, #lessons-list bdi, #review-lessons bdi, .lesson-content h2 bdi, .lesson-content h3 bdi { white-space: normal !important; }
@@ -102,78 +102,87 @@
            The markup keeps Tailwind's light classes; each color class the app uses is remapped here, which also
            covers the HTML built in JS. These rules outrank Tailwind's hover:/focus: variants, so the variants used
            on top of a remapped class are remapped too. A new color class needs a rule here. */
-        html.dark body { background-color: #0f172a; }
-        html.theme-switching * { transition: none !important; }
+        @media screen { /* printing always uses the light colors */
+            html.dark body { background-color: #0f172a; }
+            html.theme-switching * { transition: none !important; }
 
-        /* Surfaces */
-        html.dark .bg-white { background-color: #1e293b; }
-        html.dark .bg-white\/95 { background-color: rgb(30 41 59 / 0.95); }
-        html.dark .bg-slate-50, html.dark .hover\:bg-slate-50:hover { background-color: #0f172a; }
-        html.dark .bg-slate-100, html.dark .hover\:bg-slate-100:hover { background-color: #334155; }
-        html.dark .bg-slate-200 { background-color: #334155; }
-        html.dark .hover\:bg-slate-200:hover, html.dark .hover\:bg-slate-300:hover { background-color: #475569; }
-        html.dark .bg-slate-300 { background-color: #64748b; }
-        html.dark .bg-slate-800 { background-color: #334155; }
-        html.dark .bg-slate-900\/50 { background-color: rgb(2 6 23 / 0.7); }
-        html.dark :where(input:not([type=checkbox]), select, textarea) { background-color: #0f172a; }
+            /* Surfaces */
+            html.dark .bg-white { background-color: #1e293b; }
+            html.dark .bg-white\/95 { background-color: rgb(30 41 59 / 0.95); }
+            html.dark .bg-slate-50, html.dark .hover\:bg-slate-50:hover { background-color: #0f172a; }
+            html.dark .bg-slate-100, html.dark .hover\:bg-slate-100:hover { background-color: #334155; }
+            html.dark .bg-slate-200 { background-color: #334155; }
+            html.dark .hover\:bg-slate-200:hover, html.dark .hover\:bg-slate-300:hover { background-color: #475569; }
+            html.dark .bg-slate-300 { background-color: #64748b; }
+            html.dark .bg-slate-800 { background-color: #334155; }
+            html.dark .bg-slate-900\/50 { background-color: rgb(2 6 23 / 0.7); }
+            html.dark :where(input:not([type=checkbox]), select, textarea) { background-color: #0f172a; }
 
-        /* Text */
-        html.dark .text-slate-900 { color: #f8fafc; }
-        html.dark .text-slate-800 { color: #f1f5f9; }
-        html.dark .text-slate-700, html.dark .hover\:text-slate-600:hover { color: #e2e8f0; }
-        html.dark .text-slate-600 { color: #cbd5e1; }
-        html.dark .text-slate-500 { color: #94a3b8; }
-        html.dark .text-slate-400 { color: #8291a7; }
+            /* Text */
+            html.dark .text-slate-900 { color: #f8fafc; }
+            html.dark .text-slate-800 { color: #f1f5f9; }
+            html.dark .text-slate-700, html.dark .hover\:text-slate-600:hover { color: #e2e8f0; }
+            html.dark .text-slate-600 { color: #cbd5e1; }
+            html.dark .text-slate-500 { color: #94a3b8; }
+            html.dark .text-slate-400 { color: #8291a7; }
 
-        /* Borders */
-        html.dark .border-slate-50 { border-color: #273449; }
-        html.dark .border-slate-100, html.dark .border-slate-200,
-        html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #334155; }
-        html.dark .border-slate-300 { border-color: #475569; }
+            /* Borders */
+            html.dark .border-slate-50 { border-color: #273449; }
+            html.dark .border-slate-100, html.dark .border-slate-200,
+            html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]) { border-color: #334155; }
+            html.dark .border-slate-300 { border-color: #475569; }
 
-        /* Brand (sky) and chat (indigo) accents: lighter text, translucent tints instead of pale backgrounds */
-        html.dark .text-brand-500, html.dark .text-brand-600, html.dark .hover\:text-brand-600:hover { color: #38bdf8; }
-        html.dark .text-brand-700, html.dark .hover\:text-brand-700:hover { color: #7dd3fc; }
-        html.dark .bg-brand-50, html.dark .hover\:bg-brand-50:hover { background-color: rgb(14 165 233 / 0.15); }
-        html.dark .hover\:bg-brand-100:hover { background-color: rgb(14 165 233 / 0.3); }
-        html.dark .border-brand-600, html.dark .focus\:border-brand-500:focus { border-color: #0ea5e9; }
-        html.dark .border-brand-300, html.dark .hover\:border-brand-300:hover { border-color: #0284c7; }
-        html.dark .text-indigo-500 { color: #818cf8; }
-        html.dark .text-indigo-600, html.dark .text-indigo-700 { color: #a5b4fc; }
-        html.dark .bg-indigo-50, html.dark .hover\:bg-indigo-50:hover { background-color: rgb(99 102 241 / 0.15); }
-        html.dark .bg-indigo-100 { background-color: rgb(99 102 241 / 0.2); }
-        html.dark .border-indigo-100 { border-color: rgb(99 102 241 / 0.3); }
-        html.dark .border-indigo-600 { border-color: #818cf8; }
+            /* Brand (sky) and chat (indigo) accents: lighter text, translucent tints instead of pale backgrounds */
+            html.dark .text-brand-500, html.dark .text-brand-600, html.dark .hover\:text-brand-600:hover { color: #38bdf8; }
+            html.dark .text-brand-700, html.dark .hover\:text-brand-700:hover { color: #7dd3fc; }
+            html.dark .bg-brand-50, html.dark .hover\:bg-brand-50:hover { background-color: rgb(14 165 233 / 0.15); }
+            html.dark .hover\:bg-brand-100:hover { background-color: rgb(14 165 233 / 0.3); }
+            html.dark .border-brand-600, html.dark .focus\:border-brand-500:focus { border-color: #0ea5e9; }
+            html.dark .border-brand-300, html.dark .hover\:border-brand-300:hover { border-color: #0284c7; }
+            html.dark .text-indigo-500 { color: #818cf8; }
+            html.dark .text-indigo-600, html.dark .text-indigo-700 { color: #a5b4fc; }
+            html.dark .bg-indigo-50, html.dark .hover\:bg-indigo-50:hover { background-color: rgb(99 102 241 / 0.15); }
+            html.dark .bg-indigo-100 { background-color: rgb(99 102 241 / 0.2); }
+            html.dark .border-indigo-100 { border-color: rgb(99 102 241 / 0.3); }
+            html.dark .border-indigo-600 { border-color: #818cf8; }
 
-        /* Right / wrong / done */
-        html.dark .text-green-600, html.dark .text-green-700 { color: #4ade80; }
-        html.dark .text-red-500, html.dark .text-red-600 { color: #f87171; }
-        html.dark .bg-green-50, html.dark .hover\:bg-green-50:hover { background-color: rgb(34 197 94 / 0.15); }
-        html.dark .bg-red-50, html.dark .hover\:bg-red-50:hover { background-color: rgb(239 68 68 / 0.15); }
+            /* Right / wrong / done */
+            html.dark .text-green-600, html.dark .text-green-700 { color: #4ade80; }
+            html.dark .text-red-500, html.dark .text-red-600 { color: #f87171; }
+            html.dark .bg-green-50, html.dark .hover\:bg-green-50:hover { background-color: rgb(34 197 94 / 0.15); }
+            html.dark .bg-red-50, html.dark .hover\:bg-red-50:hover { background-color: rgb(239 68 68 / 0.15); }
 
-        /* Shadows barely show on dark backgrounds - outline instead */
-        html.dark header { box-shadow: 0 1px 0 #334155; }
-        html.dark .hover\:shadow-md:hover { border-color: #475569; }
-        html.dark #toast { box-shadow: 0 0 0 1px #475569, 0 10px 15px -3px rgb(0 0 0 / 0.5); }
-        html.dark #selection-bar { box-shadow: 0 0 0 1px #334155, 0 20px 25px -5px rgb(0 0 0 / 0.5); }
+            /* Shadows barely show on dark backgrounds - outline instead */
+            html.dark header { box-shadow: 0 1px 0 #334155; }
+            html.dark .hover\:shadow-md:hover { border-color: #475569; }
+            html.dark #toast { box-shadow: 0 0 0 1px #475569, 0 10px 15px -3px rgb(0 0 0 / 0.5); }
+            html.dark #selection-bar { box-shadow: 0 0 0 1px #334155, 0 20px 25px -5px rgb(0 0 0 / 0.5); }
 
-        html.dark .lesson-content h2, html.dark .lesson-content b, html.dark .lesson-content strong { color: #f8fafc; }
-        html.dark .lesson-content h3 { color: #f1f5f9; }
-        html.dark .lesson-content p, html.dark .lesson-content ul, html.dark .lesson-content ol { color: #cbd5e1; }
-        html.dark .lesson-content blockquote { border-right-color: #0369a1; background: rgb(14 165 233 / 0.1); }
-        html.dark .lesson-content pre { border: 1px solid #334155; }
-        html.dark .lesson-content th, html.dark .lesson-content td, html.dark .lesson-content hr { border-color: #334155; }
-        html.dark .lesson-content a { color: #38bdf8; }
+            html.dark .lesson-content h2, html.dark .lesson-content b, html.dark .lesson-content strong { color: #f8fafc; }
+            html.dark .lesson-content h3 { color: #f1f5f9; }
+            html.dark .lesson-content p, html.dark .lesson-content ul, html.dark .lesson-content ol { color: #cbd5e1; }
+            html.dark .lesson-content blockquote { border-right-color: #0369a1; background: rgb(14 165 233 / 0.1); }
+            html.dark .lesson-content pre { border: 1px solid #334155; }
+            html.dark .lesson-content th, html.dark .lesson-content td, html.dark .lesson-content hr { border-color: #334155; }
+            html.dark .lesson-content a { color: #38bdf8; }
+            html.dark .lesson-content mark { background-color: #854d0e; color: #fef9c3; }
 
-        html.dark ::-webkit-scrollbar-track { background: #0f172a; }
-        html.dark ::-webkit-scrollbar-thumb { background: #475569; }
-        html.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
-        html.dark .loader { border-color: #334155; border-top-color: #0ea5e9; }
-        html.dark #theme-btn { color: #fbbf24; } /* a yellow sun, so it doesn't read as a second settings gear */
-        @media (hover: hover) { html.dark #theme-btn:hover { color: #38bdf8; } } /* touch screens keep :hover after a tap */
+            html.dark ::-webkit-scrollbar-track { background: #0f172a; }
+            html.dark ::-webkit-scrollbar-thumb { background: #475569; }
+            html.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+            html.dark .loader { border-color: #334155; border-top-color: #0ea5e9; }
+            html.dark #theme-btn { color: #fbbf24; } /* a yellow sun, so it doesn't read as a second settings gear */
+            @media (hover: hover) { html.dark #theme-btn:hover { color: #38bdf8; } } /* touch screens keep :hover after a tap */
+        }
 
         /* High-contrast mode drops the colors that mark the chosen theme option */
         @media (forced-colors: active) { #theme-options [aria-pressed="true"] { outline: 2px solid Highlight; } }
+
+        /* Printing: the whole lesson - on screen it scrolls inside a fixed-height layout - without the app around it */
+        @media print {
+            body, main, #view-dashboard, #view-syllabus, #view-lesson, #view-lesson > div:not(#chat-panel), #lesson-scroll-area { height: auto !important; overflow: visible !important; }
+            header, #chat-panel, #chat-fab, #selection-bar, #lesson-nav, #lesson-streaming, #toast { display: none !important; }
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased flex flex-col overflow-hidden">
@@ -184,7 +193,7 @@
                 <div class="w-8 h-8 bg-brand-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
-                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v36</span></h1>
+                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v37</span></h1>
             </div>
 
             <div id="nav-actions" class="flex items-center min-[360px]:gap-4">
@@ -295,8 +304,8 @@
                         <span id="selection-bar-text" class="flex-1 min-w-0 truncate text-xs text-slate-300"></span>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="app.askAboutFocus('explain')" class="flex-1 text-xs font-medium bg-indigo-500 hover:bg-indigo-600 rounded-full py-2">תסביר לי</button>
-                        <button onclick="app.askAboutFocus('expand')" class="flex-1 text-xs font-medium bg-indigo-500 hover:bg-indigo-600 rounded-full py-2">תרחיב על זה</button>
+                        <button onclick="app.askAboutFocus('explain')" class="flex-1 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 rounded-full py-2">תסביר לי</button>
+                        <button onclick="app.askAboutFocus('expand')" class="flex-1 text-xs font-medium bg-indigo-600 hover:bg-indigo-700 rounded-full py-2">תרחיב על זה</button>
                         <button onclick="app.askAboutFocus('other')" class="flex-1 text-xs font-medium border border-indigo-300 hover:bg-white/10 rounded-full py-2">שאלה אחרת</button>
                     </div>
                 </div>
@@ -503,6 +512,7 @@
                 <h4 id="modal-title" class="font-bold text-slate-800">הבינה המלאכותית מתכננת את הקורס...</h4>
                 <p id="modal-subtitle" class="text-sm text-slate-500 text-center mt-2">אנו בונים סילבוס מותאם אישית לפי הדרישות שלך. זה ייקח מספר שניות.</p>
                 <button id="modal-close-btn" onclick="app.hideModalLoading()" class="hidden mt-6 bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2 rounded-lg font-medium transition-colors">חזור</button>
+                <button id="modal-cancel-btn" onclick="app.cancelGeneration()" class="mt-6 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">ביטול</button>
             </div>
         </div>
     </div>
@@ -517,7 +527,7 @@
                 </button>
             </div>
             
-            <form onsubmit="app.saveSettings(event)" class="p-6">
+            <form onsubmit="app.saveSettings(event)" class="p-6" novalidate>
                 <div class="space-y-4">
                     <p class="text-sm text-slate-600">
                         כדי שהאפליקציה תייצר קורסים מותאמים אישית, יש להזין מפתח Google Gemini API. המפתח נשמר במכשיר שלך בלבד!
@@ -671,6 +681,7 @@
                 chatFocus: null,
                 focusLocked: false,
                 chatInHistory: false,
+                pendingGone: false,
                 themePref: null
             },
             
@@ -691,6 +702,15 @@
 
                 // Opened from a notification while the app was closed (see sw.js)
                 const open = new URLSearchParams(location.search).get('open');
+                // Reloaded, or reopened by the phone after it closed the app in the background: back to the same screen
+                const prev = history.state;
+                const prevCourse = !open && prev && prev.app && window.app.state.courses.find(c => c.id === prev.courseId);
+                if (prevCourse && prev.view === 'syllabus') {
+                    window.app.openCourse(prevCourse.id, false, true);
+                } else if (prevCourse && prev.view === 'lesson' && prevCourse.syllabus[prev.lessonIndex]) {
+                    window.app.state.currentCourseId = prevCourse.id;
+                    window.app.startLesson(prev.lessonIndex, true);
+                }
                 history.replaceState(window.app.historyEntry(), '', location.pathname);
                 window.addEventListener('popstate', window.app.onPopState);
                 document.addEventListener('selectionchange', window.app.onSelectionChange);
@@ -699,6 +719,7 @@
                 document.addEventListener('touchcancel', window.app.onTouchEnd, { passive: true });
                 document.getElementById('lesson-scroll-area').addEventListener('scroll', window.app.positionSelectionBar, { passive: true });
                 window.addEventListener('storage', window.app.onStorage);
+                document.addEventListener('keydown', window.app.onKeyDown);
                 if (open && open !== 'syllabus') window.app.handleOpenTarget(open);
                 else if (window.app.state.pendingCourse && window.app.getApiKey()) window.app.openCreateModal();
 
@@ -722,18 +743,33 @@
             // --- Storage & Sync (No Firebase) ---
             loadCoursesFromStorage: () => {
                 const stored = localStorage.getItem('smartlearn_courses');
+                let courses = [];
                 if (stored) {
-                    window.app.state.courses = JSON.parse(stored);
-                    window.app.state.courses.forEach(course => {
-                        course.syllabus.forEach((l, i) => {
-                            if (l.completed === undefined) l.completed = i < (course.progress || 0);
-                        });
-                        course.numLessons = course.syllabus.length; // older versions saved the requested count
-                        window.app.updateProgress(course);
-                    });
-                } else {
-                    window.app.state.courses = [];
+                    try { courses = JSON.parse(stored); } catch (e) { courses = null; }
+                    if (!Array.isArray(courses)) {
+                        // Not something this app saved (edited by hand, a broken restore...): start empty instead of not at all,
+                        // and keep a copy if there is room, since the next save overwrites it
+                        console.error("Saved courses are unreadable:", stored.slice(0, 200));
+                        try { localStorage.setItem('smartlearn_courses_unreadable', stored); } catch (e) {}
+                        window.app.showToast('לא הצלחנו לקרוא את הקורסים השמורים. אפשר לשחזר אותם מגיבוי בהגדרות.', 8000);
+                        courses = [];
+                    }
                 }
+                window.app.state.courses = courses.filter(window.app.normalizeCourse);
+            },
+
+            // Fills in what older versions or a hand-edited backup may lack. Returns false for something that isn't a course.
+            normalizeCourse: (course) => {
+                if (!course || !course.id || !Array.isArray(course.syllabus)) return false;
+                course.syllabus = course.syllabus.filter(l => l && typeof l === 'object' && l.title);
+                if (course.syllabus.length === 0) return false;
+                course.syllabus.forEach((l, i) => {
+                    if (l.completed === undefined) l.completed = i < (course.progress || 0);
+                });
+                course.numLessons = course.syllabus.length; // older versions saved the requested count
+                ['topic', 'currentLevel', 'targetLevel', 'persona'].forEach(k => { if (typeof course[k] !== 'string') course[k] = String(course[k] ?? ''); });
+                window.app.updateProgress(course);
+                return true;
             },
             
             saveCoursesToStorage: () => {
@@ -777,6 +813,18 @@
                 const mq = window.matchMedia(query);
                 if (mq.addEventListener) mq.addEventListener('change', onChange);
                 else mq.addListener(onChange); // Safari before 14
+            },
+
+            // Escape closes the open dialog (or the tutor sheet on phones), like its X button
+            onKeyDown: (e) => {
+                if (e.key !== 'Escape') return;
+                const isOpen = (id) => !document.getElementById(id).classList.contains('opacity-0');
+                if (isOpen('create-modal')) window.app.closeCreateModal();
+                else if (isOpen('settings-modal')) {
+                    if (!document.getElementById('close-settings-btn').classList.contains('hidden')) window.app.closeSettingsModal();
+                }
+                else if (isOpen('reminder-modal')) window.app.closeReminderModal();
+                else if (window.app.state.chatInHistory) window.app.closeChat();
             },
 
             // --- Theme: 'light', 'dark' or 'auto' (follows the device) ---
@@ -846,6 +894,7 @@
                         if (s.pendingCourse) window.app.renderSyllabusReview();
                         else window.app.closeCreateModal();
                     }
+                    if (!s.pendingCourse && s.isGeneratingContent) s.pendingGone = true; // see reviseSyllabus
                 }
                 if (e.key !== null && e.key !== 'smartlearn_courses') return;
                 window.app.loadCoursesFromStorage();
@@ -914,6 +963,18 @@
                 setTimeout(() => m.classList.add('hidden'), 300);
             },
 
+            // A settings write; when the storage is full it says so instead of failing silently
+            saveSetting: (key, value) => {
+                try {
+                    localStorage.setItem(key, value);
+                    return true;
+                } catch (e) {
+                    console.error("Saving a setting failed", e);
+                    window.app.showToast('האחסון במכשיר מלא - השינוי לא נשמר. מחק קורס ישן כדי לפנות מקום.', 6000);
+                    return false;
+                }
+            },
+
             saveSettings: (e) => {
                 e.preventDefault();
                 const key = document.getElementById('input-api-key').value.trim();
@@ -923,11 +984,18 @@
                     return;
                 }
                 if (key !== window.app.getApiKey()) window.app.resetModels();
-                localStorage.setItem('smartlearn_api_key', key);
+                // Out-of-range numbers are clamped here (the form has novalidate, so they can't block saving the key)
                 const numLessons = Math.min(30, Math.max(1, parseInt(document.getElementById('settings-lessons').value) || 5));
                 const persona = document.getElementById('settings-persona').value;
-                localStorage.setItem('smartlearn_defaults', JSON.stringify({ numLessons, persona }));
-                localStorage.setItem('smartlearn_notify', document.getElementById('settings-notify').checked ? '1' : '0');
+                const days = Math.min(30, Math.max(1, parseInt(document.getElementById('reminder-days').value) || 1));
+                const time = document.getElementById('reminder-time').value || '20:00';
+                const saved = [
+                    window.app.saveSetting('smartlearn_api_key', key),
+                    window.app.saveSetting('smartlearn_defaults', JSON.stringify({ numLessons, persona })),
+                    window.app.saveSetting('smartlearn_notify', document.getElementById('settings-notify').checked ? '1' : '0'),
+                    window.app.saveSetting('smartlearn_reminder', JSON.stringify({ days, time }))
+                ].every(Boolean);
+                if (!saved) return; // the storage-full message stays, and so does the dialog
                 window.app.applyCourseDefaults();
                 window.app.showToast('ההגדרות נשמרו בהצלחה!');
                 window.app.closeSettingsModal();
@@ -956,7 +1024,7 @@
                     return;
                 }
                 const courses = data && data.app === 'smartlearn' && Array.isArray(data.courses)
-                    ? data.courses.filter(c => c && c.id && c.topic && Array.isArray(c.syllabus) && c.syllabus.length > 0)
+                    ? data.courses.filter(c => c && c.topic && window.app.normalizeCourse(c))
                     : [];
                 if (courses.length === 0) {
                     window.app.showToast('לא נמצאו קורסים בקובץ הגיבוי');
@@ -971,14 +1039,9 @@
                 const imported = new Map(courses.map(c => [c.id, c]));
                 const merged = window.app.state.courses.map(c => imported.get(c.id) || c);
                 courses.forEach(c => { if (!existing.has(c.id)) merged.push(c); });
-                merged.forEach(course => {
-                    course.syllabus.forEach(l => { if (l.completed === undefined) l.completed = false; });
-                    course.numLessons = course.syllabus.length;
-                    window.app.updateProgress(course);
-                });
                 window.app.state.courses = merged;
-                if (data.defaults && !localStorage.getItem('smartlearn_defaults')) localStorage.setItem('smartlearn_defaults', JSON.stringify(data.defaults));
-                if (data.reminder && !localStorage.getItem('smartlearn_reminder')) localStorage.setItem('smartlearn_reminder', JSON.stringify(data.reminder));
+                if (data.defaults && !localStorage.getItem('smartlearn_defaults')) window.app.saveSetting('smartlearn_defaults', JSON.stringify(data.defaults));
+                if (data.reminder && !localStorage.getItem('smartlearn_reminder')) window.app.saveSetting('smartlearn_reminder', JSON.stringify(data.reminder));
                 window.app.applyCourseDefaults();
                 window.app.fillSettingsDefaults(); // settings is open: so saving it doesn't write the old values back
                 if (window.app.saveCoursesToStorage()) window.app.showToast(`שוחזרו ${courses.length} קורסים!`);
@@ -1100,8 +1163,8 @@
                         details: `ממשיכים בקורס "${course.topic}"`
                     };
                 }
-                localStorage.setItem('smartlearn_reminder', JSON.stringify({ days, time }));
-                return { days, start, end, title: 'רוצה ללמוד משהו? 📚', url: window.app.appUrl(), details: 'ממשיכים ללמוד ב-SmartLearn' };
+                const saved = window.app.saveSetting('smartlearn_reminder', JSON.stringify({ days, time }));
+                return { days, start, end, saved, title: 'רוצה ללמוד משהו? 📚', url: window.app.appUrl(), details: 'ממשיכים ללמוד ב-SmartLearn' };
             },
 
             calendarTime: (d) => {
@@ -1219,9 +1282,26 @@
             },
 
             onPopState: (e) => {
-                window.app.closeAllModals();
+                // The back step navigate() took to drop the tutor sheet's entry: now make the screen change it held
+                if (window.app.afterSheetPop.length) {
+                    window.app.afterSheetPop.splice(0).forEach(update => update());
+                    return;
+                }
                 const st = e.state;
                 const s = window.app.state;
+                // Back from a dialog opened over the tutor sheet: close the dialog, keep the sheet
+                if (st && st.modal === 'sheet' && s.chatInHistory) {
+                    window.app.closeCreateModal(true);
+                    window.app.closeSettingsModal(true);
+                    window.app.closeReminderModal(true);
+                    return;
+                }
+                window.app.closeAllModals();
+                // Forward onto the entry of a dialog that was closed: step back over it, or the next back press would do nothing
+                if (st && st.modal && !s.isGeneratingContent) {
+                    history.back();
+                    return;
+                }
                 if (!st || !st.app || st.view === 'dashboard') {
                     if (s.view !== 'dashboard') window.app.navigate('dashboard', true);
                     return;
@@ -1238,10 +1318,15 @@
                 }
             },
 
-            // Dialogs also get a history entry, so back closes the dialog instead of leaving the screen
-            pushModalState: () => {
-                if (!(history.state && history.state.modal)) history.pushState({ ...window.app.historyEntry(), modal: true }, '');
+            // Dialogs (and the tutor sheet on phones) also get a history entry, so back closes them instead of leaving
+            // the screen. kind: 'dialog' or 'sheet'. A dialog over the sheet gets its own entry, so closing it keeps the sheet.
+            pushModalState: (kind = 'dialog') => {
+                const modal = history.state && history.state.modal;
+                if (modal && !(modal === 'sheet' && kind === 'dialog')) return;
+                history.pushState({ ...window.app.historyEntry(), modal: kind }, '');
             },
+
+            afterSheetPop: [],
 
             popModalState: () => {
                 if (history.state && history.state.modal) history.back();
@@ -1265,9 +1350,20 @@
 
                 if (!fromHistory) {
                     const entry = window.app.historyEntry();
-                    const overDialog = history.state && history.state.modal;
-                    if (window.app.viewDepth[viewId] > window.app.viewDepth[prevView] && !overDialog) history.pushState(entry, '');
-                    else history.replaceState(entry, '');
+                    const deeper = window.app.viewDepth[viewId] > window.app.viewDepth[prevView];
+                    const update = () => {
+                        const overDialog = history.state && history.state.modal;
+                        if (deeper && !overDialog) history.pushState(entry, '');
+                        else history.replaceState(entry, '');
+                    };
+                    if (history.state && history.state.modal === 'sheet') {
+                        // Leaving the lesson's tutor sheet: drop its entry first, so the new screen takes the lesson's place
+                        // in history as without the sheet. history.back() is async - onPopState makes the change.
+                        window.app.afterSheetPop.push(update);
+                        if (window.app.afterSheetPop.length === 1) history.back();
+                    } else {
+                        update();
+                    }
                 }
                 
                 if (viewId !== 'dashboard') window.app.state.reorderMode = false;
@@ -1355,6 +1451,13 @@
                 document.getElementById('modal-title').classList.replace('text-red-600', 'text-slate-800');
                 document.getElementById('modal-subtitle').textContent = subtitle;
                 document.getElementById('modal-close-btn').classList.add('hidden');
+                document.getElementById('modal-cancel-btn').classList.remove('hidden');
+            },
+
+            // The loading overlay's ביטול: stop waiting for Gemini and go back to the form / syllabus
+            generationAbort: null,
+            cancelGeneration: () => {
+                if (window.app.generationAbort) window.app.generationAbort.abort();
             },
 
             // Error stays inside the modal so the form / syllabus underneath is preserved
@@ -1367,6 +1470,7 @@
                 document.getElementById('modal-title').classList.replace('text-slate-800', 'text-red-600');
                 document.getElementById('modal-subtitle').textContent = /נסה שוב/.test(error.message) ? error.message : `${error.message.replace(/[.\s]+$/, '')}. נסה שוב.`;
                 document.getElementById('modal-close-btn').classList.remove('hidden');
+                document.getElementById('modal-cancel-btn').classList.add('hidden');
             },
 
             hideModalLoading: () => {
@@ -1421,7 +1525,8 @@
                     return usable([window.app.workingModel, ...rest.filter(m => m !== window.app.workingModel)]);
                 }
                 try {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&key=${apiKey}`);
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000&key=${apiKey}`,
+                        { signal: AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined }); // stalled: use the fallback list
                     if (res.ok) {
                         const data = await res.json();
                         if (data.models && Array.isArray(data.models)) {
@@ -1458,9 +1563,11 @@
             refusals: ['SAFETY', 'PROHIBITED_CONTENT', 'BLOCKLIST', 'SPII', 'IMAGE_SAFETY'],
 
             // Reads a streamGenerateContent (SSE) response, calling onText with the full text so far
-            readStream: async (response, onText) => {
+            // onChunk: called whenever data arrives (keeps callGemini's stall timer from firing)
+            readStream: async (response, onText, onChunk = () => {}) => {
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
+                let head = ''; // start of the body, for an error sent as plain JSON instead of a stream
                 let buffer = '';
                 let text = '';
                 let finishReason = null;
@@ -1490,7 +1597,10 @@
                 while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;
-                    buffer += decoder.decode(value, { stream: true });
+                    onChunk();
+                    const chunk = decoder.decode(value, { stream: true });
+                    if (head.length < 4096) head += chunk;
+                    buffer += chunk;
                     const lines = buffer.split('\n');
                     buffer = lines.pop();
                     for (const line of lines) {
@@ -1500,7 +1610,13 @@
                 if (buffer.startsWith('data:')) handleEvent(buffer.slice(5).trim());
 
                 if (!gotCandidate && blockReason) throw Object.assign(new Error(`Gemini לא הסכים לענות על זה (${blockReason}).`), { final: true });
-                if (!gotCandidate) throw new Error("No candidates returned from Gemini.");
+                if (!gotCandidate) {
+                    let plain = null;
+                    try { plain = JSON.parse(head); } catch (e) {}
+                    const body = Array.isArray(plain) ? plain[0] : plain;
+                    if (body && body.error) throw Object.assign(new Error(body.error.message), { status: body.error.code });
+                    throw new Error("No candidates returned from Gemini.");
+                }
                 return { text, finishReason };
             },
 
@@ -1525,7 +1641,7 @@
             // --- Gemini API Call ---
             // options: { schema, maxOutputTokens, onText (enables streaming), retries }
             callGemini: async (prompt, options = {}) => {
-                const { schema = null, maxOutputTokens = 8192, onText = null, retries = 2 } = options;
+                const { schema = null, maxOutputTokens = 8192, onText = null, retries = 2, signal = null } = options;
                 const apiKey = window.app.getApiKey();
                 if (!apiKey) {
                     window.app.openSettingsModal(true);
@@ -1557,15 +1673,29 @@
                         ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`
                         : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                     for (let i = 0; i < retries; i++) {
+                        // A stalled request (e.g. a half-open phone connection) would spin forever: give up after a while.
+                        // The caller can also cancel (signal).
+                        const ctrl = new AbortController();
+                        let timer;
+                        const giveUpIn = (ms) => {
+                            clearTimeout(timer);
+                            timer = setTimeout(() => ctrl.abort(), ms);
+                        };
+                        const cancel = () => ctrl.abort();
+                        if (signal) signal.addEventListener('abort', cancel);
                         try {
+                            if (signal && signal.aborted) ctrl.abort();
+                            giveUpIn(onText ? 60000 : 90000);
                             const response = await fetch(apiUrl, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(buildPayload(model))
+                                body: JSON.stringify(buildPayload(model)),
+                                signal: ctrl.signal
                             });
 
                             if (onText && response.ok) {
-                                const { text, finishReason } = await window.app.readStream(response, onText);
+                                // Streaming: only a long silence between chunks counts as stalled
+                                const { text, finishReason } = await window.app.readStream(response, onText, () => giveUpIn(60000));
                                 window.app.workingModel = model; // Cache working model for future calls
                                 if (finishReason === 'MAX_TOKENS') console.warn(`Streamed answer from ${model} was cut at MAX_TOKENS`);
                                 else if (finishReason && finishReason !== 'STOP') {
@@ -1623,6 +1753,11 @@
                             }
                         } catch (e) {
                             console.warn(`Gemini API Error (${model}, Attempt ${i+1}):`, e);
+                            if (ctrl.signal.aborted) {
+                                // Not retried: a timeout already took a minute, and a cancel means stop
+                                const cancelled = !!(signal && signal.aborted);
+                                throw Object.assign(new Error(cancelled ? 'Cancelled' : 'Gemini לא ענה זמן רב מדי. נסה שוב.'), { cancelled });
+                            }
                             // This model rejected our thinking settings - retry it without them
                             if (e.status === 400 && /thinking/i.test(e.message || '') && !window.app.noThinkingConfig.has(model)) {
                                 window.app.noThinkingConfig.add(model);
@@ -1643,6 +1778,9 @@
                             // No connection: other models won't help, so stop after this model's retries
                             if (e instanceof TypeError && !navigator.onLine) throw window.app.friendlyError(e);
                             if (i < retries - 1) await new Promise(r => setTimeout(r, 1000));
+                        } finally {
+                            clearTimeout(timer);
+                            if (signal) signal.removeEventListener('abort', cancel);
                         }
                     }
                     if (lastError instanceof TypeError) break; // network failure - same for every model
@@ -1711,8 +1849,9 @@
    - 'summary': משפט אחד בלבד (עד 20 מילים) המסביר מה נלמד בשיעור.
 4. השיעורים צריכים להתקדם בסדר כרונולוגי הגיוני - מהבסיס והמבוא ועד לרמת היעד המבוקשת.`;
 
+                window.app.generationAbort = new AbortController();
                 try {
-                    const syllabusData = await window.app.callGemini(prompt, { schema: window.app.syllabusSchema(`רשימה של בדיוק ${numLessons} שיעורים נפרדים`) });
+                    const syllabusData = await window.app.callGemini(prompt, { schema: window.app.syllabusSchema(`רשימה של בדיוק ${numLessons} שיעורים נפרדים`), signal: window.app.generationAbort.signal });
                     
                     if(!syllabusData.lessons || syllabusData.lessons.length === 0) {
                         throw new Error("הסילבוס שהוחזר ריק");
@@ -1726,7 +1865,8 @@
 
                 } catch(error) {
                     console.error("Create course failed", error);
-                    window.app.showModalError(error);
+                    if (error.cancelled) window.app.hideModalLoading();
+                    else window.app.showModalError(error);
                 }
             },
 
@@ -1777,10 +1917,19 @@ ${JSON.stringify(p.lessons)}
 3. לכל שיעור: 'title' קצר (עד 6 מילים) ו-'summary' של משפט אחד (עד 20 מילים).
 4. השיעורים צריכים להתקדם בסדר הגיוני - מהבסיס ועד לרמת היעד.`;
 
+                window.app.generationAbort = new AbortController();
+                window.app.state.pendingGone = false;
                 try {
-                    const syllabusData = await window.app.callGemini(prompt, { schema: window.app.syllabusSchema("רשימת השיעורים המעודכנת") });
+                    const syllabusData = await window.app.callGemini(prompt, { schema: window.app.syllabusSchema("רשימת השיעורים המעודכנת"), signal: window.app.generationAbort.signal });
                     if (!syllabusData.lessons || syllabusData.lessons.length === 0) {
                         throw new Error("הסילבוס שהוחזר ריק");
+                    }
+                    if (window.app.state.pendingGone) {
+                        // Approved or discarded in another window meanwhile - nothing is left to revise
+                        window.app.hideModalLoading();
+                        window.app.closeCreateModal();
+                        window.app.showToast('הסילבוס כבר טופל בחלון אחר');
+                        return;
                     }
                     window.app.setPendingCourse({ ...p, lessons: syllabusData.lessons });
                     feedbackEl.value = '';
@@ -1790,7 +1939,8 @@ ${JSON.stringify(p.lessons)}
                     window.app.notify('הסילבוס עודכן! 📚', `הסילבוס לקורס "${p.topic}" עודכן ומחכה לאישור שלך.`, 'syllabus');
                 } catch (error) {
                     console.error("Revise syllabus failed", error);
-                    window.app.showModalError(error);
+                    if (error.cancelled) window.app.hideModalLoading();
+                    else window.app.showModalError(error);
                 }
             },
 
@@ -1947,9 +2097,9 @@ ${JSON.stringify(p.lessons)}
                             <i class="fa-solid fa-play"></i>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="text-xs text-brand-100 mb-0.5">המשך מאיפה שעצרת</div>
+                            <div class="text-xs mb-0.5">המשך מאיפה שעצרת</div>
                             <div class="font-bold text-lg truncate">${esc(course.topic)}</div>
-                            <div class="text-sm text-brand-100 truncate">שיעור ${index + 1}: ${esc(course.syllabus[index].title)}</div>
+                            <div class="text-sm truncate">שיעור ${index + 1}: ${esc(course.syllabus[index].title)}</div>
                         </div>
                         <i class="fa-solid fa-arrow-left text-lg shrink-0"></i>
                     </button>
@@ -1966,7 +2116,9 @@ ${JSON.stringify(p.lessons)}
                 if (confirm('האם אתה בטוח שברצונך למחוק קורס זה? הפעולה בלתי הפיכה.')) {
                     window.app.state.courses = window.app.state.courses.filter(c => c.id !== window.app.state.currentCourseId);
                     const saved = window.app.saveCoursesToStorage();
-                    window.app.navigate('dashboard');
+                    // The dashboard is the entry under the syllabus: go back to it rather than leave a second one behind
+                    if (history.state && history.state.app && history.state.view === 'syllabus' && history.length > 1) history.back();
+                    else window.app.navigate('dashboard');
                     if (saved) window.app.showToast('הקורס נמחק.'); // otherwise the storage-full message stays
                 }
             },
@@ -2009,7 +2161,7 @@ ${JSON.stringify(p.lessons)}
                     let icon, statusClasses, btnHtml;
 
                     if (lesson.completed) {
-                        icon = '<i class="fa-solid fa-circle-check text-green-500"></i>';
+                        icon = '<i class="fa-solid fa-circle-check text-green-600"></i>';
                         statusClasses = 'bg-slate-50 hover:bg-slate-100';
                         btnHtml = '<span class="text-xs font-medium text-slate-600">חזור על השיעור</span>';
                     } else if (lesson.contentData) {
@@ -2162,7 +2314,16 @@ ${JSON.stringify(p.lessons)}
             },
 
             // DOMParser documents are inert (no image loads / handlers), unlike a detached <div>
-            htmlToText: (html) => new DOMParser().parseFromString(html, 'text/html').body.textContent.replace(/\s+/g, ' ').trim(),
+            // Code blocks keep their lines and indentation (they matter in Python); other text becomes one line
+            htmlToText: (html) => {
+                const body = new DOMParser().parseFromString(html, 'text/html').body;
+                const code = [];
+                body.querySelectorAll('pre').forEach(pre => {
+                    code.push(pre.textContent.replace(/^\n+|\s+$/g, ''));
+                    pre.replaceWith(`\u0000${code.length - 1}\u0000`);
+                });
+                return body.textContent.replace(/\s+/g, ' ').trim().replace(/\u0000(\d+)\u0000/g, (m, i) => `\n${code[i]}\n`);
+            },
 
             cleanLessonHtml: (text) => text.trim()
                 .replace(/^```(?:html)?\s*/i, '')
@@ -2559,6 +2720,16 @@ ${lessonText}
                 window.app.showToast('הקובץ ירד. ב-NotebookLM: הוספת מקור ← העלאת קובץ', 5000);
             },
 
+            // In the course file each lesson sits under the course: its title, sections and quiz move one level down
+            // (lines inside ``` code are left alone - '# ' there is a Python comment)
+            demoteHeadings: (md) => {
+                let inCode = false;
+                return md.split('\n').map(line => {
+                    if (line.startsWith('```')) inCode = !inCode;
+                    return !inCode && /^#{1,5} /.test(line) ? '#' + line : line;
+                }).join('\n');
+            },
+
             downloadCourseForNotebook: () => {
                 const course = window.app.getCurrentCourse();
                 const written = course.syllabus.map((l, i) => i).filter(i => course.syllabus[i].contentData);
@@ -2568,7 +2739,7 @@ ${lessonText}
                 }
                 const outline = course.syllabus.map((l, i) => `${i + 1}. ${l.title}${course.syllabus[i].contentData ? '' : ' (עוד לא נכתב)'}`).join('\n');
                 const md = [`# ${course.topic}`, `רמת יעד: ${course.targetLevel}`, '## סילבוס', outline,
-                    ...written.map(i => window.app.lessonMarkdown(course, i).replace(/^# /, '## '))].join('\n\n');
+                    ...written.map(i => window.app.demoteHeadings(window.app.lessonMarkdown(course, i)))].join('\n\n');
                 window.app.downloadFile(`${window.app.safeFilename(course.topic)} - קורס.md`, md, 'text/markdown;charset=utf-8');
                 window.app.showToast(`ירד קובץ עם ${written.length} שיעורים. ב-NotebookLM: הוספת מקור ← העלאת קובץ`, 5000);
             },
@@ -2578,7 +2749,7 @@ ${lessonText}
                 const done = course.syllabus[index].completed;
                 const btn = document.getElementById('complete-lesson-btn');
                 btn.className = done
-                    ? 'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white border border-green-500'
+                    ? 'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white border border-green-700'
                     : 'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 bg-white hover:bg-green-50 text-green-700 border border-green-500';
                 btn.innerHTML = done
                     ? '<i class="fa-solid fa-circle-check"></i> הושלם'
@@ -2619,7 +2790,8 @@ ${lessonText}
                     const bar = document.getElementById('selection-bar');
                     const sel = document.getSelection();
                     const content = document.getElementById('lesson-content');
-                    if (!sel || sel.isCollapsed || !sel.rangeCount || !content.contains(sel.anchorNode) || !content.contains(sel.focusNode) || window.app.isTapSelection()) {
+                    // One end in the lesson is enough: a triple-click on its last paragraph ends in the quiz below
+                    if (!sel || sel.isCollapsed || !sel.rangeCount || !(content.contains(sel.anchorNode) || content.contains(sel.focusNode)) || window.app.isTapSelection()) {
                         // Selection cancelled: the chat goes back to general questions - unless the user picked
                         // "other" (the typed question about the selection comes next).
                         // (Clicks on the quick actions run before this debounced check, so they still get the selection.)
@@ -2627,7 +2799,13 @@ ${lessonText}
                         if (window.app.state.chatFocus && !window.app.state.focusLocked) window.app.clearChatFocus();
                         return;
                     }
-                    const text = sel.toString().replace(/\s+/g, ' ').trim();
+                    const range = sel.getRangeAt(0).cloneRange();
+                    if (!content.contains(range.startContainer)) range.setStart(content, 0);
+                    if (!content.contains(range.endContainer)) range.setEnd(content, content.childNodes.length);
+                    // Code keeps its lines and indentation (they matter in Python); other text becomes one line
+                    const node = range.commonAncestorContainer;
+                    const inCode = (node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement).closest('pre');
+                    const text = inCode ? range.toString().replace(/^\n+|\s+$/g, '') : range.toString().replace(/\s+/g, ' ').trim();
                     if (text.length < 2) return;
                     // Not taken to the chat yet - a focus kept by "שאלה אחרת" for an earlier selection no longer holds
                     window.app.state.focusLocked = false;
@@ -2734,7 +2912,7 @@ ${lessonText}
                 panel.classList.remove('translate-y-full');
                 // On phones the chat is a sheet over the lesson: like a dialog, the back button closes it
                 if (!window.matchMedia('(min-width: 768px)').matches) {
-                    window.app.pushModalState();
+                    window.app.pushModalState('sheet');
                     window.app.state.chatInHistory = true;
                 }
             },
@@ -2751,7 +2929,10 @@ ${lessonText}
                 e.preventDefault();
                 const inputEl = document.getElementById('chat-input');
                 const userQuery = inputEl.value.trim();
-                if (!userQuery) return;
+                if (!userQuery) {
+                    inputEl.value = '';
+                    return;
+                }
                 inputEl.value = '';
                 window.app.askTutor(userQuery);
             },

@@ -1,11 +1,29 @@
 // Keep in sync with the version shown in the header of index.html
-const CACHE_NAME = 'smartlearn-cache-v36';
+const CACHE_NAME = 'smartlearn-cache-v37';
 const urlsToCache = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+
+// The design files the page loads from CDNs. Cached at install too: on the first visit the page loads them before
+// this worker runs, so otherwise the app would look broken offline until a second visit.
+const CDN_FILES = [
+  ['https://cdn.tailwindcss.com', 'no-cors'],
+  ['https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap', 'no-cors'],
+  ['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css', 'no-cors'],
+  ['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2', 'cors'],
+  ['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-regular-400.woff2', 'cors'],
+  ['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-brands-400.woff2', 'cors']
+];
 
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then(cache => Promise.all([
+      cache.addAll(urlsToCache),
+      // Best effort: a CDN that is down must not stop the install (the page caches them later too).
+      // put() rather than add(): add() refuses the opaque (no-cors) responses.
+      ...CDN_FILES.map(([url, mode]) => fetch(new Request(url, { mode }))
+        .then(response => { if (response.ok || response.type === 'opaque') return cache.put(url, response); })
+        .catch(() => {}))
+    ]))
   );
 });
 
