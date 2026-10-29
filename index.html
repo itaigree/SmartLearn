@@ -87,7 +87,7 @@
                 <div class="w-8 h-8 bg-brand-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
-                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v32</span></h1>
+                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v33</span></h1>
             </div>
             
             <div id="nav-actions" class="flex items-center gap-4">
@@ -1152,8 +1152,9 @@
                     const rest = window.app.discoveredModels || window.app.fallbackModels;
                     return usable([window.app.workingModel, ...rest.filter(m => m !== window.app.workingModel)]);
                 }
+                const clock = window.app.withTimeout(8000);
                 try {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`, { signal: clock.signal });
                     if (res.ok) {
                         const data = await res.json();
                         if (data.models && Array.isArray(data.models)) {
@@ -1173,6 +1174,8 @@
                     }
                 } catch (err) {
                     console.warn("Could not retrieve ListModels dynamically, using fallback list:", err);
+                } finally {
+                    clock.done();
                 }
                 return usable(window.app.fallbackModels);
             },
@@ -1186,8 +1189,28 @@
                 return null;
             },
 
+            // Cuts off a request that stops responding. kick() pushes the cut-off back, so a stream
+            // that is still flowing keeps going while a silent one dies after `ms`.
+            withTimeout: (ms) => {
+                const ctrl = new AbortController();
+                let timer = null;
+                const arm = () => {
+                    clearTimeout(timer);
+                    timer = setTimeout(() => ctrl.abort(), Math.max(0, ms));
+                };
+                arm();
+                return { signal: ctrl.signal, kick: arm, done: () => clearTimeout(timer) };
+            },
+
+            timeoutError: () => {
+                const e = new Error('Gemini לא ענה בזמן.');
+                e.timeout = true;
+                return e;
+            },
+
             // Reads a streamGenerateContent (SSE) response, calling onText with the full text so far
-            readStream: async (response, onText) => {
+            // onChunk fires on every read - the caller uses it to tell a live stream from a stalled one
+            readStream: async (response, onText, onChunk = null) => {
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let buffer = '';
@@ -1216,6 +1239,7 @@
 
                 while (true) {
                     const { done, value } = await reader.read();
+                    if (onChunk) onChunk();
                     if (done) break;
                     buffer += decoder.decode(value, { stream: true });
                     const lines = buffer.split('\n');
@@ -1238,6 +1262,7 @@
                 else if (/api key not valid|api_key_invalid/i.test(msg)) text = 'מפתח ה-API לא תקין. בדוק אותו בהגדרות (גלגל השיניים למעלה).';
                 else if (e.status === 429 || /quota|rate limit|resource.?exhausted/i.test(msg)) text = 'הגעת למגבלת השימוש של המפתח ב-Gemini. חכה כמה דקות ונסה שוב.';
                 else if (e.status === 503 || /overloaded|unavailable/i.test(msg)) text = 'השרתים של Gemini עמוסים כרגע. נסה שוב בעוד רגע.';
+                else if (e.timeout) text = 'התשובה מ-Gemini מתעכבת מדי. נסה שוב.';
                 if (!text) return e;
                 const friendly = new Error(text);
                 friendly.status = e.status;
@@ -1245,9 +1270,15 @@
             },
 
             // --- Gemini API Call ---
-            // options: { schema, maxOutputTokens, onText (enables streaming), retries }
+            // options: { schema, maxOutputTokens, onText (enables streaming), retries, timeout, budget, maxModels }
+            // timeout: how long one request may stay silent. budget: how long the whole call may take -
+            // without it a key that is out of quota walks the entire model list and the UI waits minutes.
             callGemini: async (prompt, options = {}) => {
-                const { schema = null, maxOutputTokens = 8192, onText = null, retries = 2 } = options;
+                const {
+                    schema = null, maxOutputTokens = 8192, onText = null, retries = 2,
+                    timeout = onText ? 25000 : 60000, budget = 180000, maxModels = 3
+                } = options;
+                const deadline = Date.now() + budget;
                 const apiKey = window.app.getApiKey();
                 if (!apiKey) {
                     window.app.openSettingsModal(true);
@@ -1271,20 +1302,28 @@
                 };
 
                 let lastError = null;
+                let failedModels = 0;
+                attempts:
                 for (const model of models) {
                     const apiUrl = onText
                         ? `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${apiKey}`
                         : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                     for (let i = 0; i < retries; i++) {
+                        if (Date.now() >= deadline) {
+                            if (!lastError) lastError = window.app.timeoutError();
+                            break attempts;
+                        }
+                        const clock = window.app.withTimeout(Math.min(timeout, deadline - Date.now()));
                         try {
                             const response = await fetch(apiUrl, {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(buildPayload(model))
+                                body: JSON.stringify(buildPayload(model)),
+                                signal: clock.signal
                             });
 
                             if (onText && response.ok) {
-                                const { text, finishReason } = await window.app.readStream(response, onText);
+                                const { text, finishReason } = await window.app.readStream(response, onText, clock.kick);
                                 window.app.workingModel = model; // Cache working model for future calls
                                 if (finishReason === 'MAX_TOKENS') console.warn(`Streamed answer from ${model} was cut at MAX_TOKENS`);
                                 if (!text) throw new Error("Gemini returned an empty answer.");
@@ -1324,7 +1363,10 @@
                             } else {
                                 throw new Error("No candidates returned from Gemini.");
                             }
-                        } catch (e) {
+                        } catch (err) {
+                            // A request we cut off ourselves is a timeout, not a network failure
+                            const e = (err?.name === 'AbortError' || err?.name === 'TimeoutError')
+                                ? window.app.timeoutError() : err;
                             console.warn(`Gemini API Error (${model}, Attempt ${i+1}):`, e);
                             // This model rejected our thinking settings - retry it without them
                             if (e.status === 400 && /thinking/i.test(e.message || '') && !window.app.noThinkingConfig.has(model)) {
@@ -1345,9 +1387,14 @@
                             // No connection: other models won't help, so stop after this model's retries
                             if (e instanceof TypeError && !navigator.onLine) throw window.app.friendlyError(e);
                             if (i < retries - 1) await new Promise(r => setTimeout(r, 1000));
+                        } finally {
+                            clock.done();
                         }
                     }
                     if (lastError instanceof TypeError) break; // network failure - same for every model
+                    // A retired model costs nothing to skip; a model that really failed does, so give up
+                    // after a few of those instead of marching down a list that can hold dozens of models.
+                    if (!window.app.unavailableModels.has(model) && ++failedModels >= maxModels) break;
                 }
                 throw window.app.friendlyError(lastError || new Error("Unknown error"));
             },
@@ -2354,16 +2401,18 @@ ${lessonText}
                 e.preventDefault();
                 const inputEl = document.getElementById('chat-input');
                 const userQuery = inputEl.value.trim();
-                if (!userQuery) return;
+                if (!userQuery || window.app.chatBusy) return;
                 inputEl.value = '';
                 window.app.askTutor(userQuery);
             },
 
             // instruction: extra guidance for the quick actions on a selection (explain / expand)
             askTutor: async (userQuery, instruction = '') => {
+                if (window.app.chatBusy) return;
                 window.app.appendChatMessage('user', userQuery);
                 const focus = window.app.state.chatFocus;
-                window.app.clearChatFocus();
+                window.app.clearChatFocus(); // resets the placeholder, so it runs before we take the lock
+                window.app.setChatBusy(true);
 
                 const course = window.app.getCurrentCourse();
                 const lessonIndex = window.app.state.currentLessonIndex;
@@ -2394,7 +2443,7 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
                         <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
                             <i class="fa-solid fa-robot text-xs text-indigo-600"></i>
                         </div>
-                        <div class="bg-white border border-slate-200 rounded-2xl rounded-tr-none p-3 text-sm text-slate-500 shadow-sm flex gap-1">
+                        <div id="${typingId}-body" class="bg-white border border-slate-200 rounded-2xl rounded-tr-none p-3 text-sm text-slate-500 shadow-sm flex gap-1">
                             <div class="w-2 h-2 bg-slate-300 rounded-full animate-bounce"></div>
                             <div class="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
                             <div class="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
@@ -2403,16 +2452,48 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
                 `);
                 msgContainer.scrollTop = msgContainer.scrollHeight;
 
+                // Stream the answer into the bubble: the first words land after about a second
+                // instead of leaving the three dots up until the whole answer is ready.
+                const bubble = document.getElementById(`${typingId}-body`);
+                const onText = (soFar) => {
+                    if (!bubble.isConnected) return;
+                    bubble.className = 'bg-white border border-slate-200 rounded-2xl rounded-tr-none p-3 text-sm text-slate-700 shadow-sm whitespace-pre-wrap';
+                    bubble.textContent = soFar;
+                    msgContainer.scrollTop = msgContainer.scrollHeight;
+                };
+
+                // The chat is wiped when the lesson changes - an answer that arrives after that is dropped
+                const stale = () => !document.getElementById(typingId);
                 try {
-                    const responseText = await window.app.callGemini(prompt);
-                    document.getElementById(typingId)?.remove();
+                    const responseText = await window.app.callGemini(prompt, { onText, budget: 45000 });
+                    if (stale()) return;
+                    document.getElementById(typingId).remove();
                     window.app.state.chatHistory.push({ role: 'user', text: userQuery }, { role: 'bot', text: responseText });
-                    window.app.appendChatMessage('bot', responseText);
+                    window.app.appendChatMessage('bot', responseText); // re-render for **bold** and Latin isolation
                 } catch(error) {
                     console.error("Chat error", error);
-                    document.getElementById(typingId)?.remove();
-                    window.app.appendChatMessage('bot', "מצטער, הייתה לי שגיאה בתקשורת. ודא שמפתח ה-API תקין ונסה שוב.");
+                    if (stale()) return;
+                    document.getElementById(typingId).remove();
+                    window.app.appendChatMessage('bot', error?.message || "מצטער, הייתה לי שגיאה בתקשורת. ודא שמפתח ה-API תקין ונסה שוב.");
+                } finally {
+                    window.app.setChatBusy(false);
                 }
+            },
+
+            // While an answer is on its way the chat takes no new question
+            chatBusy: false,
+            setChatBusy: (busy) => {
+                window.app.chatBusy = busy;
+                const input = document.getElementById('chat-input');
+                const btn = document.getElementById('chat-submit-btn');
+                if (btn) {
+                    btn.disabled = busy;
+                    btn.classList.toggle('opacity-40', busy);
+                    btn.classList.toggle('pointer-events-none', busy);
+                }
+                // The input stays usable on purpose - disabling it closes the keyboard on a phone,
+                // so the next question can be typed while this answer is still coming in.
+                if (input) input.placeholder = busy ? 'רגע, אני עונה...' : 'שאל שאלה על השיעור...';
             },
 
             appendChatMessage: (role, text) => {
