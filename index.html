@@ -87,7 +87,7 @@
                 <div class="w-8 h-8 bg-brand-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
-                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v33</span></h1>
+                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v34</span></h1>
             </div>
             
             <div id="nav-actions" class="flex items-center gap-4">
@@ -1278,14 +1278,25 @@
                     schema = null, maxOutputTokens = 8192, onText = null, retries = 2,
                     timeout = onText ? 25000 : 60000, budget = 180000, maxModels = 3
                 } = options;
-                const deadline = Date.now() + budget;
+                const started = Date.now();
+                const deadline = started + budget;
                 const apiKey = window.app.getApiKey();
                 if (!apiKey) {
                     window.app.openSettingsModal(true);
                     throw new Error("API Key is missing");
                 }
 
+                // What each attempt did, attached to the error so the app can show it - on a phone there is no console
+                const log = [];
+                const secs = (from) => `${((Date.now() - from) / 1000).toFixed(1)}s`;
+                const fail = (e) => {
+                    const f = window.app.friendlyError(e);
+                    f.log = log;
+                    return f;
+                };
+
                 const models = await window.app.getAvailableModels(apiKey);
+                log.push(`models (${secs(started)}): ${models.slice(0, 4).join(', ')}${models.length > 4 ? ', ...' : ''}`);
 
                 const buildPayload = (model) => {
                     const payload = {
@@ -1310,10 +1321,14 @@
                         : `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
                     for (let i = 0; i < retries; i++) {
                         if (Date.now() >= deadline) {
+                            log.push(`stopped: the ${budget / 1000}s budget ran out`);
                             if (!lastError) lastError = window.app.timeoutError();
                             break attempts;
                         }
-                        const clock = window.app.withTimeout(Math.min(timeout, deadline - Date.now()));
+                        const limit = Math.min(timeout, deadline - Date.now());
+                        const clock = window.app.withTimeout(limit);
+                        const t0 = Date.now();
+                        let headersAt = null;
                         try {
                             const response = await fetch(apiUrl, {
                                 method: 'POST',
@@ -1321,6 +1336,7 @@
                                 body: JSON.stringify(buildPayload(model)),
                                 signal: clock.signal
                             });
+                            headersAt = Date.now();
 
                             if (onText && response.ok) {
                                 const { text, finishReason } = await window.app.readStream(response, onText, clock.kick);
@@ -1368,6 +1384,12 @@
                             const e = (err?.name === 'AbortError' || err?.name === 'TimeoutError')
                                 ? window.app.timeoutError() : err;
                             console.warn(`Gemini API Error (${model}, Attempt ${i+1}):`, e);
+                            // "silent" = Google never answered; "stalled" = it answered, then the stream went quiet
+                            const what = e.timeout
+                                ? (headersAt ? `stalled: headers after ${((headersAt - t0) / 1000).toFixed(1)}s, then no data for ${Math.round(limit / 1000)}s`
+                                             : `silent: no response at all for ${Math.round(limit / 1000)}s`)
+                                : `${e.status ? `HTTP ${e.status} ` : ''}${e.name === 'TypeError' ? 'network error: ' : ''}${(e.message || 'unknown error').slice(0, 160)}`;
+                            log.push(`${model} #${i + 1} (${secs(t0)}): ${what}`);
                             // This model rejected our thinking settings - retry it without them
                             if (e.status === 400 && /thinking/i.test(e.message || '') && !window.app.noThinkingConfig.has(model)) {
                                 window.app.noThinkingConfig.add(model);
@@ -1383,9 +1405,9 @@
                                 break;
                             }
                             lastError = e;
-                            if ([400, 401, 403].includes(e.status)) throw window.app.friendlyError(e); // Bad key / unauthorized - fail immediately
+                            if ([400, 401, 403].includes(e.status)) throw fail(e); // Bad key / unauthorized - fail immediately
                             // No connection: other models won't help, so stop after this model's retries
-                            if (e instanceof TypeError && !navigator.onLine) throw window.app.friendlyError(e);
+                            if (e instanceof TypeError && !navigator.onLine) throw fail(e);
                             if (i < retries - 1) await new Promise(r => setTimeout(r, 1000));
                         } finally {
                             clock.done();
@@ -1396,7 +1418,7 @@
                     // after a few of those instead of marching down a list that can hold dozens of models.
                     if (!window.app.unavailableModels.has(model) && ++failedModels >= maxModels) break;
                 }
-                throw window.app.friendlyError(lastError || new Error("Unknown error"));
+                throw fail(lastError || new Error("Unknown error"));
             },
 
             // --- Course Generation ---
@@ -2407,11 +2429,18 @@ ${lessonText}
             },
 
             // instruction: extra guidance for the quick actions on a selection (explain / expand)
-            askTutor: async (userQuery, instruction = '') => {
+            askTutor: (userQuery, instruction = '') => {
                 if (window.app.chatBusy) return;
                 window.app.appendChatMessage('user', userQuery);
                 const focus = window.app.state.chatFocus;
                 window.app.clearChatFocus(); // resets the placeholder, so it runs before we take the lock
+                return window.app.answerTutor(userQuery, instruction, focus);
+            },
+
+            // Gets the answer to a question already in the chat. slot: the error bubble of a failed try -
+            // a retry answers in its place, next to the question, instead of at the bottom of the chat.
+            answerTutor: async (userQuery, instruction, focus, slot = null) => {
+                if (window.app.chatBusy) return;
                 window.app.setChatBusy(true);
 
                 const course = window.app.getCurrentCourse();
@@ -2438,7 +2467,7 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
 
                 const msgContainer = document.getElementById('chat-messages');
                 const typingId = 'typing-' + Date.now();
-                msgContainer.insertAdjacentHTML('beforeend', `
+                window.app.putChatMessage(`
                     <div id="${typingId}" class="flex items-start gap-2">
                         <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
                             <i class="fa-solid fa-robot text-xs text-indigo-600"></i>
@@ -2449,8 +2478,7 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
                             <div class="w-2 h-2 bg-slate-300 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
                         </div>
                     </div>
-                `);
-                msgContainer.scrollTop = msgContainer.scrollHeight;
+                `, slot);
 
                 // Stream the answer into the bubble: the first words land after about a second
                 // instead of leaving the three dots up until the whole answer is ready.
@@ -2459,22 +2487,24 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
                     if (!bubble.isConnected) return;
                     bubble.className = 'bg-white border border-slate-200 rounded-2xl rounded-tr-none p-3 text-sm text-slate-700 shadow-sm whitespace-pre-wrap';
                     bubble.textContent = soFar;
-                    msgContainer.scrollTop = msgContainer.scrollHeight;
+                    // Follow the text only when it is the newest message (a retry higher up stays put)
+                    if (document.getElementById(typingId) === msgContainer.lastElementChild) msgContainer.scrollTop = msgContainer.scrollHeight;
                 };
 
                 // The chat is wiped when the lesson changes - an answer that arrives after that is dropped
-                const stale = () => !document.getElementById(typingId);
+                const typing = () => document.getElementById(typingId);
                 try {
                     const responseText = await window.app.callGemini(prompt, { onText, budget: 45000 });
-                    if (stale()) return;
-                    document.getElementById(typingId).remove();
+                    if (!typing()) return;
                     window.app.state.chatHistory.push({ role: 'user', text: userQuery }, { role: 'bot', text: responseText });
-                    window.app.appendChatMessage('bot', responseText); // re-render for **bold** and Latin isolation
+                    window.app.putChatMessage(window.app.chatMessageHtml('bot', responseText), typing()); // re-render for **bold** and Latin isolation
                 } catch(error) {
                     console.error("Chat error", error);
-                    if (stale()) return;
-                    document.getElementById(typingId).remove();
-                    window.app.appendChatMessage('bot', error?.message || "מצטער, הייתה לי שגיאה בתקשורת. ודא שמפתח ה-API תקין ונסה שוב.");
+                    if (!typing()) return;
+                    const el = window.app.putChatMessage(window.app.chatErrorHtml(error), typing());
+                    el.querySelector('.chat-retry-btn').addEventListener('click', () => {
+                        window.app.answerTutor(userQuery, instruction, focus, el);
+                    });
                 } finally {
                     window.app.setChatBusy(false);
                 }
@@ -2486,18 +2516,60 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
                 window.app.chatBusy = busy;
                 const input = document.getElementById('chat-input');
                 const btn = document.getElementById('chat-submit-btn');
-                if (btn) {
-                    btn.disabled = busy;
-                    btn.classList.toggle('opacity-40', busy);
-                    btn.classList.toggle('pointer-events-none', busy);
-                }
+                // "Try again" on a failed answer waits too - one question at a time
+                [btn, ...document.querySelectorAll('.chat-retry-btn')].forEach(b => {
+                    if (!b) return;
+                    b.disabled = busy;
+                    b.classList.toggle('opacity-40', busy);
+                    b.classList.toggle('pointer-events-none', busy);
+                });
                 // The input stays usable on purpose - disabling it closes the keyboard on a phone,
                 // so the next question can be typed while this answer is still coming in.
                 if (input) input.placeholder = busy ? 'רגע, אני עונה...' : 'שאל שאלה על השיעור...';
             },
 
-            appendChatMessage: (role, text) => {
+            appendChatMessage: (role, text) => window.app.putChatMessage(window.app.chatMessageHtml(role, text)),
+
+            // Puts one message (html with a single root element) in place of `el`, or at the bottom of the chat
+            putChatMessage: (html, el = null) => {
                 const msgContainer = document.getElementById('chat-messages');
+                const atBottom = !el || el === msgContainer.lastElementChild;
+                const tpl = document.createElement('template');
+                tpl.innerHTML = html.trim();
+                const node = tpl.content.firstElementChild;
+                if (el) el.replaceWith(node);
+                else msgContainer.appendChild(node);
+                window.app.isolateLatin(node);
+                if (atBottom) msgContainer.scrollTop = msgContainer.scrollHeight;
+                return node;
+            },
+
+            // A failed answer: what went wrong, a "try again" button, and what each attempt did
+            chatErrorHtml: (error) => {
+                const esc = window.app.escapeHtml;
+                const message = error?.message || "מצטער, הייתה לי שגיאה בתקשורת. ודא שמפתח ה-API תקין ונסה שוב.";
+                const log = (error?.log || []).join('\n');
+                return `
+                    <div class="flex items-start gap-2">
+                        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                            <i class="fa-solid fa-robot text-xs text-indigo-600"></i>
+                        </div>
+                        <div class="bg-white border border-red-200 rounded-2xl rounded-tr-none p-3 text-sm text-slate-700 shadow-sm min-w-0">
+                            <p>${esc(message)}</p>
+                            <button type="button" class="chat-retry-btn mt-2 inline-flex items-center gap-1.5 bg-brand-600 hover:bg-brand-700 text-white text-xs font-medium px-3 py-1.5 rounded-full transition-colors">
+                                <i class="fa-solid fa-rotate-right"></i> נסה שוב
+                            </button>
+                            ${log ? `
+                            <details class="mt-2 text-xs text-slate-500">
+                                <summary class="cursor-pointer select-none">פרטים טכניים</summary>
+                                <pre dir="ltr" class="mt-1 p-2 bg-slate-50 rounded text-left whitespace-pre-wrap break-all font-mono text-[11px] leading-snug">${esc(log)}</pre>
+                            </details>` : ''}
+                        </div>
+                    </div>
+                `;
+            },
+
+            chatMessageHtml: (role, text) => {
                 // Escape, then allow simple **bold** from the model
                 const safe = window.app.escapeHtml(text).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
                 let html = '';
@@ -2522,9 +2594,7 @@ ${history ? `השיחה עד עכשיו:\n${history}\n` : ''}${focus ? `הלומ
                         </div>
                     `;
                 }
-                msgContainer.insertAdjacentHTML('beforeend', html);
-                window.app.isolateLatin(msgContainer.lastElementChild);
-                msgContainer.scrollTop = msgContainer.scrollHeight;
+                return html;
             }
         };
 
