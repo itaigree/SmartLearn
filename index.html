@@ -87,7 +87,7 @@
                 <div class="w-8 h-8 bg-brand-600 text-white rounded-lg flex items-center justify-center font-bold text-xl">
                     <i class="fa-solid fa-graduation-cap"></i>
                 </div>
-                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v34</span></h1>
+                <h1 class="font-bold text-xl text-slate-900 tracking-tight">Smart<span class="text-brand-600">Learn</span> <span class="text-xs text-slate-400 font-normal">v35</span></h1>
             </div>
             
             <div id="nav-actions" class="flex items-center gap-4">
@@ -148,9 +148,14 @@
                                 <span id="syllabus-persona"><i class="fa-solid fa-user-graduate ml-1"></i> סגנון למידה</span>
                                 <span id="syllabus-progress-text"><i class="fa-solid fa-chart-line ml-1"></i> התקדמות</span>
                             </div>
-                            <button onclick="app.downloadCourseForNotebook()" class="mt-3 text-sm font-medium text-brand-600 hover:text-brand-700" title="קובץ עם כל השיעורים שנכתבו, להעלאה כמקור ב-NotebookLM">
-                                <i class="fa-solid fa-file-arrow-down ml-1"></i> הורד את הקורס ל-NotebookLM
-                            </button>
+                            <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium">
+                                <button onclick="app.openNotesModal()" class="text-brand-600 hover:text-brand-700" title="מה לשנות בשיעורים שעוד ייכתבו">
+                                    <i class="fa-regular fa-comment-dots ml-1"></i> <span id="syllabus-notes-label">הערות להמשך הקורס</span>
+                                </button>
+                                <button onclick="app.downloadCourseForNotebook()" class="text-brand-600 hover:text-brand-700" title="קובץ עם כל השיעורים שנכתבו, להעלאה כמקור ב-NotebookLM">
+                                    <i class="fa-solid fa-file-arrow-down ml-1"></i> הורד את הקורס ל-NotebookLM
+                                </button>
+                            </div>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <button id="course-reminder-btn" onclick="app.openReminderModal()" class="text-brand-600 hover:bg-brand-50 p-2 rounded-lg transition-colors" title="תזכורת לקורס">
@@ -243,6 +248,14 @@
                                 לשיעור הבא <i class="fa-solid fa-arrow-left"></i>
                             </button>
                         </div>
+                        <button onclick="app.openNotesModal()" class="mt-5 w-full text-right flex items-center gap-3 p-3 rounded-lg border border-dashed border-slate-300 hover:border-brand-500 hover:bg-brand-50 transition-colors">
+                            <i class="fa-regular fa-comment-dots text-brand-600 text-lg shrink-0"></i>
+                            <span class="flex-1 min-w-0">
+                                <span class="block text-sm font-medium text-slate-800">הערות להמשך הקורס</span>
+                                <span class="block text-xs text-slate-500">משהו לא עבד לך? כתוב, והשיעורים הבאים ייכתבו בהתאם.</span>
+                            </span>
+                            <span id="lesson-notes-count" class="hidden text-xs font-bold bg-brand-50 text-brand-700 rounded-full px-2 py-0.5 shrink-0"></span>
+                        </button>
                         <div class="flex flex-wrap justify-between items-center gap-3 mt-5 text-sm">
                             <button onclick="app.goBack()" class="font-medium text-slate-600 hover:text-brand-600 transition-colors">
                                 <i class="fa-solid fa-list-ul ml-1"></i> חזרה לסילבוס
@@ -539,6 +552,32 @@
                 </div>
                 <p class="text-xs text-slate-400 mt-3">בלחיצה על Google Calendar נפתח עמוד של אירוע חוזר, ולוחצים "שמירה". קובץ היומן מתאים ליומן של סמסונג, אפל או Outlook. הקישור באירוע פותח ישר את הקורס.</p>
             </div>
+        </div>
+    </div>
+
+    <!-- Course Notes Modal: what to change in the lessons not written yet -->
+    <div id="notes-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl w-[calc(100%-2rem)] max-w-md max-h-[90dvh] overflow-y-auto transform scale-95 transition-transform duration-300" id="notes-modal-content">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg text-slate-800"><i class="fa-regular fa-comment-dots text-brand-600 ml-1"></i> הערות להמשך הקורס</h3>
+                <button onclick="app.closeNotesModal()" class="text-slate-400 hover:text-slate-600" title="סגור">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form onsubmit="app.saveCourseNote(event)" class="p-6">
+                <p class="text-sm text-slate-600 mb-4">משהו לא אהבת במה שנכתב עד עכשיו? כתוב כאן, וכל שיעור שייכתב מעכשיו בקורס הזה ייקח את זה בחשבון. שיעורים שכבר פתחת לא משתנים.</p>
+                <label for="notes-input" id="notes-input-label" class="block text-sm font-medium text-slate-700 mb-1">הערה חדשה</label>
+                <textarea id="notes-input" rows="3" maxlength="1000" required placeholder="לדוגמה: יותר דוגמאות מעשיות, פחות היסטוריה, שיעורים קצרים יותר..." class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none resize-none"></textarea>
+                <div class="mt-3 flex justify-end">
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-colors">
+                        <i class="fa-solid fa-check ml-1"></i> שמור הערה
+                    </button>
+                </div>
+                <div id="notes-existing" class="hidden mt-5 pt-4 border-t border-slate-100">
+                    <h4 class="text-sm font-bold text-slate-800 mb-2">ההערות שכבר כתבת</h4>
+                    <ul id="notes-list" class="space-y-2"></ul>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -959,6 +998,125 @@
                 setTimeout(() => m.classList.add('hidden'), 300);
             },
 
+            // --- Notes for the rest of the course: what to change in the lessons not written yet ---
+            // course.notes: [{ text, lessonIndex (the lesson it was written after, null = from the syllabus), createdAt }]
+            notesFrom: null,
+
+            openNotesModal: () => {
+                const s = window.app.state;
+                window.app.notesFrom = s.view === 'lesson' ? s.currentLessonIndex : null;
+                document.getElementById('notes-input-label').textContent = window.app.notesFrom === null
+                    ? 'הערה חדשה' : `הערה חדשה (אחרי שיעור ${window.app.notesFrom + 1})`;
+                window.app.renderNotesList();
+                const m = document.getElementById('notes-modal');
+                const c = document.getElementById('notes-modal-content');
+                m.classList.remove('hidden');
+                void m.offsetWidth;
+                m.classList.remove('opacity-0');
+                c.classList.remove('scale-95');
+                window.app.pushModalState();
+                document.getElementById('notes-input').focus();
+            },
+
+            closeNotesModal: (fromHistory = false) => {
+                const m = document.getElementById('notes-modal');
+                if (m.classList.contains('opacity-0')) return; // already closed / closing
+                if (!fromHistory) window.app.popModalState();
+                const c = document.getElementById('notes-modal-content');
+                m.classList.add('opacity-0');
+                c.classList.add('scale-95');
+                setTimeout(() => m.classList.add('hidden'), 300);
+            },
+
+            renderNotesList: () => {
+                const notes = window.app.getCurrentCourse().notes || [];
+                const esc = window.app.escapeHtml;
+                document.getElementById('notes-existing').classList.toggle('hidden', notes.length === 0);
+                const list = document.getElementById('notes-list');
+                // Newest first
+                list.innerHTML = notes.map((n, i) => `
+                    <li class="flex items-start gap-2 bg-slate-50 border border-slate-100 rounded-lg p-3">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm text-slate-700 whitespace-pre-wrap break-words">${esc(n.text)}</p>
+                            <p class="text-xs text-slate-400 mt-1">${n.lessonIndex == null ? 'מהסילבוס' : `אחרי שיעור ${n.lessonIndex + 1}`} · ${new Date(n.createdAt).toLocaleDateString('he-IL')}</p>
+                        </div>
+                        <button type="button" onclick="app.deleteCourseNote(${i})" class="text-slate-400 hover:text-red-500 p-1 shrink-0" title="מחק הערה">
+                            <i class="fa-regular fa-trash-can text-sm"></i>
+                        </button>
+                    </li>
+                `).reverse().join('');
+                window.app.isolateLatin(list);
+            },
+
+            updateNotesCount: (course) => {
+                const n = (course.notes || []).length;
+                document.getElementById('syllabus-notes-label').textContent = n ? `הערות להמשך הקורס (${n})` : 'הערות להמשך הקורס';
+                const badge = document.getElementById('lesson-notes-count');
+                badge.textContent = n;
+                badge.classList.toggle('hidden', n === 0);
+            },
+
+            saveCourseNote: (e) => {
+                e.preventDefault();
+                const input = document.getElementById('notes-input');
+                const text = input.value.trim();
+                if (!text) {
+                    input.focus();
+                    return;
+                }
+                const course = window.app.getCurrentCourse();
+                if (!course.notes) course.notes = [];
+                course.notes.push({ text, lessonIndex: window.app.notesFrom, createdAt: Date.now() });
+                const rewritten = window.app.dropUnreadLessons(course);
+                window.app.saveCoursesToStorage();
+                input.value = '';
+                window.app.updateNotesCount(course);
+                window.app.closeNotesModal();
+                window.app.refreshAfterNotes(course);
+                window.app.showToast(rewritten === 0 ? 'ההערה נשמרה - השיעורים הבאים ייכתבו לפיה'
+                    : rewritten === 1 ? 'ההערה נשמרה. שיעור שנכתב מראש ועוד לא נפתח ייכתב מחדש לפיה.'
+                    : `ההערה נשמרה. ${rewritten} שיעורים שנכתבו מראש ועוד לא נפתחו ייכתבו מחדש לפיה.`, 4000);
+            },
+
+            deleteCourseNote: (index) => {
+                if (!confirm('למחוק את ההערה? שיעורים שייכתבו מעכשיו לא יתחשבו בה.')) return;
+                const course = window.app.getCurrentCourse();
+                course.notes.splice(index, 1);
+                window.app.saveCoursesToStorage();
+                window.app.renderNotesList();
+                window.app.updateNotesCount(course);
+            },
+
+            // The next lesson is written ahead while the user reads (prefetchNextLesson), so it usually exists
+            // before a note about the current lesson does. Lessons written ahead and never opened are dropped
+            // and written again with the note; one still being written ahead is dropped when it finishes.
+            dropUnreadLessons: (course) => {
+                let count = 0;
+                course.syllabus.forEach((lesson, i) => {
+                    const gen = window.app.generations[window.app.lessonKey(course.id, i)];
+                    if (gen && gen.background) {
+                        gen.stale = true;
+                        count++;
+                    } else if (lesson.contentData && lesson.contentData.unread) {
+                        lesson.contentData = null;
+                        count++;
+                    }
+                });
+                return count;
+            },
+
+            // Write the next lesson again now if the user is reading the one before it, and redraw the syllabus
+            refreshAfterNotes: (course) => {
+                const s = window.app.state;
+                if (s.currentCourseId !== course.id) return;
+                if (s.view === 'lesson' && course.syllabus[s.currentLessonIndex]?.contentData) window.app.prefetchNextLesson(course, s.currentLessonIndex);
+                if (s.view === 'syllabus') window.app.openCourse(course.id, true, true);
+            },
+
+            // The notes as a list for the prompts, oldest first
+            notesForPrompt: (course) => (course.notes || []).map(n =>
+                `- ${n.lessonIndex == null ? '' : `(נכתבה אחרי שיעור ${n.lessonIndex + 1}) `}${n.text.replace(/\s+/g, ' ')}`).join('\n'),
+
             // --- UI Navigation ---
             showToast: (msg, duration = 3000) => {
                 const t = document.getElementById('toast');
@@ -1009,6 +1167,7 @@
                 window.app.closeCreateModal(true);
                 window.app.closeSettingsModal(true);
                 window.app.closeReminderModal(true);
+                window.app.closeNotesModal(true);
             },
 
             navigate: (viewId, fromHistory = false) => {
@@ -1796,6 +1955,7 @@ ${JSON.stringify(p.lessons)}
                 window.app.isolateLatin(list);
                 window.app.isolateLatin(document.getElementById('syllabus-title'));
                 window.app.updateReminderBell(course);
+                window.app.updateNotesCount(course);
                 window.app.navigate('syllabus', fromHistory);
                 // The browser keeps this container's old scroll position even while hidden, so reset it once visible
                 if (!keepScroll) {
@@ -1821,6 +1981,7 @@ ${JSON.stringify(p.lessons)}
                 document.getElementById('lesson-streaming').classList.add('hidden');
                 document.getElementById('quiz-section').classList.add('hidden');
                 document.getElementById('lesson-nav').classList.add('hidden');
+                window.app.updateNotesCount(course);
 
                 window.app.state.chatHistory = [];
                 window.app.clearChatFocus();
@@ -1845,8 +2006,9 @@ ${JSON.stringify(p.lessons)}
                 const gen = window.app.generations[window.app.lessonKey(course.id, lessonIndex)];
                 if (lesson.contentData) {
                     window.app.renderLesson(course, lessonIndex);
-                } else if (gen) {
+                } else if (gen && !gen.stale) {
                     // Already being written (e.g. user left and came back, or written ahead) - just re-attach to the stream
+                    // (a stale one, written ahead before the latest note, is replaced by a new one instead)
                     gen.background = false; // the user is waiting for it now
                     if (gen.text) window.app.renderStreamingContent(gen.text);
                 } else {
@@ -1921,10 +2083,13 @@ ${JSON.stringify(p.lessons)}
                 const key = window.app.lessonKey(course.id, lessonIndex);
                 const gen = { text: '', background };
                 window.app.generations[key] = gen;
+                // False once a newer generation of the same lesson took over (see startLesson) - this one is then ignored
+                const isCurrent = () => window.app.generations[key] === gen;
                 if (!background) window.app.ensureNotifyPermission();
 
                 const currentLesson = course.syllabus[lessonIndex];
                 const fullSyllabusJson = JSON.stringify(course.syllabus.map(s => ({title: s.title, summary: s.summary})));
+                const notes = window.app.notesForPrompt(course);
 
                 const prompt = `כתוב את שיעור מספר ${lessonIndex + 1} מתוך ${course.numLessons} בקורס בנושא '${course.topic}'.
 כותרת השיעור הנוכחי: '${currentLesson.title}'.
@@ -1936,7 +2101,10 @@ ${JSON.stringify(p.lessons)}
 2. כתוב שיעור ארוך, מקיף ומפורט מאוד (באורך של כ-10 דקות קריאה, לפחות 1500 מילים).
 3. תן הרחבות, מקרי בוחן, דוגמאות, וחלק את הטקסט עם תתי-כותרות.
 4. החזר HTML בלבד, עם תגיות בסיסיות בלבד (h2, h3, p, ul, ol, li, b, strong, em, blockquote, pre, code, table). בלי Markdown, בלי בלוק קוד עוטף (\`\`\`), בלי תגיות html/head/body ובלי כותרת h1.
-5. אל תכלול בוחן או שאלות לתרגול בסוף השיעור - הבוחן נוצר בנפרד.`;
+5. אל תכלול בוחן או שאלות לתרגול בסוף השיעור - הבוחן נוצר בנפרד.${notes ? `
+
+הערות שהלומד כתב על הקורס עד עכשיו. התאם את השיעור אליהן: הן גוברות על הנחיות 1-3 ועל סגנון הלמידה, אבל לא על הנחיות 4-5. אם שתי הערות סותרות, המאוחרת קובעת.
+${notes}` : ''}`;
 
                 let renderPending = false;
                 const onText = (text) => {
@@ -1945,16 +2113,25 @@ ${JSON.stringify(p.lessons)}
                     renderPending = true;
                     requestAnimationFrame(() => {
                         renderPending = false;
-                        if (window.app.isViewingLesson(course.id, lessonIndex)) window.app.renderStreamingContent(gen.text);
+                        if (isCurrent() && window.app.isViewingLesson(course.id, lessonIndex)) window.app.renderStreamingContent(gen.text);
                     });
                 };
 
                 try {
                     const raw = await window.app.callGemini(prompt, { maxOutputTokens: 32768, onText });
+                    if (!isCurrent()) return;
+                    if (gen.stale) {
+                        // A note was added while this was written ahead and nobody opened it - write it again with the note
+                        delete window.app.generations[key];
+                        window.app.refreshAfterNotes(course);
+                        return;
+                    }
                     const content = window.app.cleanLessonHtml(raw);
                     if (!content) throw new Error("השיעור שהתקבל ריק");
 
                     currentLesson.contentData = { content, quiz: null };
+                    // Written ahead and not opened yet: a note added before it is opened has it written again
+                    if (gen.background && !window.app.isViewingLesson(course.id, lessonIndex)) currentLesson.contentData.unread = true;
                     window.app.saveCoursesToStorage();
                     delete window.app.generations[key];
                     if (!gen.background) window.app.notify(`שיעור ${lessonIndex + 1} מוכן! 📖`, currentLesson.title, `lesson:${course.id}:${lessonIndex}`);
@@ -1967,6 +2144,7 @@ ${JSON.stringify(p.lessons)}
                         if (s.view === 'syllabus' && s.currentCourseId === course.id) window.app.openCourse(course.id, true);
                     }
                 } catch(error) {
+                    if (!isCurrent()) return;
                     delete window.app.generations[key];
                     console.error("Lesson generation failed", error);
                     if (window.app.isViewingLesson(course.id, lessonIndex)) window.app.showLessonError(error);
@@ -1975,6 +2153,10 @@ ${JSON.stringify(p.lessons)}
 
             renderLesson: (course, lessonIndex) => {
                 const lessonData = course.syllabus[lessonIndex].contentData;
+                if (lessonData.unread) {
+                    delete lessonData.unread; // opened - a later note no longer rewrites it
+                    window.app.saveCoursesToStorage();
+                }
                 document.getElementById('lesson-loading').classList.add('hidden');
                 document.getElementById('lesson-streaming').classList.add('hidden');
                 document.getElementById('lesson-content').innerHTML = window.app.sanitizeHtml(lessonData.content);
@@ -1991,7 +2173,8 @@ ${JSON.stringify(p.lessons)}
             prefetchNextLesson: (course, lessonIndex) => {
                 const next = lessonIndex + 1;
                 if (next >= course.syllabus.length || course.syllabus[next].contentData) return;
-                if (window.app.generations[window.app.lessonKey(course.id, next)]) return;
+                const gen = window.app.generations[window.app.lessonKey(course.id, next)];
+                if (gen && !gen.stale) return; // a stale one (written before the latest note) is replaced
                 window.app.generateLesson(next, course, true);
             },
 
@@ -2081,11 +2264,15 @@ ${JSON.stringify(p.lessons)}
                 const lesson = course.syllabus[lessonIndex];
 
                 const lessonText = window.app.htmlToText(lesson.contentData.content).substring(0, 15000);
+                const notes = window.app.notesForPrompt(course);
 
                 const prompt = `לפניך שיעור בנושא '${lesson.title}' מתוך קורס על '${course.topic}'.
 חבר בוחן קצר של 3 שאלות אמריקאיות בעברית שבודקות הבנה של החומר בשיעור.
 לכל שאלה: 4 אפשרויות, אינדקס התשובה הנכונה (מתחיל מ-0), והסבר קצר (משפט אחד) למה זו התשובה הנכונה.
-
+${notes ? `
+הערות שהלומד כתב על הקורס. התחשב רק במה שנוגע לבוחן (רמת קושי, סוג או מספר השאלות) - שם הן גוברות על ההנחיות שלמעלה. אם שתי הערות סותרות, המאוחרת קובעת.
+${notes}
+` : ''}
 טקסט השיעור:
 """
 ${lessonText}
